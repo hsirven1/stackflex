@@ -1,0 +1,20 @@
+/* StackFlex "Bright Future" design tokens. Imported after tailwindcss in app/globals.css. */
+
+@theme inline {
+  --color-sf-ink: #0b0b0c; /* type, primary button */
+  --color-sf-blue: #3a2eff; /* ultramarine: action, selection, current step */
+  --color-sf-lime: #d7ff3a; /* checks + button arrow coin only */
+  --color-sf-paper: #faf9f6; /* warm white: gallery tiles */
+  --color-sf-chip: #f4f3ef; /* secondary button, unselected model pill */
+  --color-sf-line: #eceae4; /* card border, upcoming step */
+  --color-sf-body: #55534d; /* subhead / body */
+  --color-sf-muted: #6f6d66; /* secondary text, text buttons */
+  --color-sf-subtle: #8c897f; /* hints */
+  --color-sf-faint: #a8a59c; /* "/ 6" */
+  --color-sf-ver: #2a2925; /* card version text */
+  --color-sf-grid: #eeece6; /* landing background grid lines */
+  --color-sf-linkedin: #0a66c2;
+
+  --font-display: var(--font-funnel-display), system-ui, sans-serif;
+  --font-sans: var(--font-funnel-sans), system-ui, sans-serif;
+}

@@ -1,0 +1,26 @@
+/* Tailwind v4: import after `@import "tailwindcss";` in app/globals.css.
+   (Tailwind v3: use tailwind.stackflex.preset.js instead and keep only the base block below.) */
+
+@theme inline {
+  --color-sf-ink: #0B0B0C;      /* type, primary button */
+  --color-sf-blue: #3A2EFF;     /* ultramarine: action, selection, current step */
+  --color-sf-lime: #D7FF3A;     /* checks + button arrow coin only */
+  --color-sf-paper: #FAF9F6;    /* warm white: gallery tiles */
+  --color-sf-chip: #F4F3EF;     /* secondary button, unselected model pill */
+  --color-sf-line: #ECEAE4;     /* card border, upcoming step */
+  --color-sf-body: #55534D;     /* subhead / body */
+  --color-sf-muted: #6F6D66;    /* secondary text, text buttons */
+  --color-sf-subtle: #8C897F;   /* hints */
+  --color-sf-faint: #A8A59C;    /* "/ 6" */
+  --color-sf-ver: #2A2925;      /* card version text */
+
+  --font-display: var(--font-funnel-display), system-ui, sans-serif;
+  --font-sans: var(--font-funnel-sans), system-ui, sans-serif;
+}
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { background: #FFFFFF; color: #0B0B0C; font-family: var(--font-sans); }
+  a { color: #3A2EFF; }
+  a:hover { color: #0B0B0C; }
+}
