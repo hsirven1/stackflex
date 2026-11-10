@@ -1,0 +1,23 @@
+/* StackFlex landing hero v2. Import from LandingHero only — do not load on Results. */
+.sf-landing-grid {
+  background-image: linear-gradient(#F1EFEA 1px, transparent 1px), linear-gradient(90deg, #F1EFEA 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(62% 70% at 68% 50%, #000 30%, transparent 85%);
+  mask-image: radial-gradient(62% 70% at 68% 50%, #000 30%, transparent 85%);
+}
+@media (max-width: 767px) {
+  .sf-landing-grid {
+    background-size: 40px 40px;
+    -webkit-mask-image: radial-gradient(90% 50% at 50% 72%, #000 30%, transparent 85%);
+    mask-image: radial-gradient(90% 50% at 50% 72%, #000 30%, transparent 85%);
+  }
+}
+
+/* Optional entrance (600ms total, never blocks Start). Add .sf-landing-anim to the showcase root. */
+.sf-landing-anim [data-sf-alt] { animation: sf-fan 420ms 80ms cubic-bezier(.2,.8,.2,1) both; }
+.sf-landing-anim [data-sf-frame] { animation: sf-rise 420ms 180ms cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sf-fan { from { opacity: 0; rotate: 0deg; } }
+@keyframes sf-rise { from { opacity: 0; translate: 0 14px; } }
+@media (prefers-reduced-motion: reduce) {
+  .sf-landing-anim [data-sf-alt], .sf-landing-anim [data-sf-frame] { animation: none; }
+}

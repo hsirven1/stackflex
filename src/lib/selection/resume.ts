@@ -12,7 +12,7 @@ const SECTION: Record<CategoryId, string> = {
   creative: "Creative AI",
   automation: "Automation & Agents",
   research: "Research & Productivity",
-  local: "Local AI & Infrastructure",
+  local: "Models & Platforms",
 };
 const OTHER_SECTION = "Other AI Tools";
 

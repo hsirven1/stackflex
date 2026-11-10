@@ -5,25 +5,15 @@ import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } fro
 import { catalog } from "@/lib/catalog/adapter";
 import type { CatalogModel } from "@/lib/catalog/types";
 import { itemLabel, modelFieldLabel, modelPickerMode, toolIconSlug } from "@/lib/selection/derive";
-import { updateItem } from "@/lib/selection/store";
 import type { SelectedItem } from "@/lib/selection/types";
-import {
-  ChoicePill,
-  InlineInput,
-  isCustomModelActive,
-  isCustomVersionActive,
-  pickFamily,
-  pickVersion,
-  toggleOtherModel,
-  toggleOtherVersion,
-} from "./InlineModelPicker";
+import { ChoicePill, clearModel, pickFamily, pickVersion } from "./InlineModelPicker";
 import { ToolIcon } from "./ToolIcon";
 
 /** Rough width of one character and of a pill's chrome at 12.5px, used to fit a single row. */
 const CHAR_PX = 6.6;
 const PILL_CHROME_PX = 24;
 const CHECK_PX = 14;
-/** Room for "Other" and the "+N" overflow button. */
+/** Room for the "+N" overflow button and "None". */
 const RESERVE_PX = 98;
 
 interface Choice {
@@ -63,7 +53,7 @@ interface ModelStripProps {
 /**
  * Fixed-height model area at the bottom of a category card for the focused tool:
  * row 1 = model families (or versions for single-model tools), row 2 = exact versions of the
- * chosen family or a typed "Other" value. Everything is optional; "More" opens the full picker.
+ * chosen family. Everything is optional; "More" opens the full picker.
  */
 export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen, detailsAnchor }: ModelStripProps) {
   const rowRef = useRef<HTMLDivElement>(null);
@@ -89,7 +79,7 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
   const label = itemLabel(focused);
   const onDemand = modelPickerMode(focused) === "on-demand";
   const hidden = onDemand && models.length > 0 && !focused.modelId && !revealed.includes(focused.id);
-  const customModel = isCustomModelActive(focused);
+  const hasChoice = Boolean(focused.modelId || focused.customModel || focused.customVersion);
   const fieldLabel = single
     ? single.name.toLowerCase() === label.toLowerCase()
       ? "version"
@@ -111,25 +101,6 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
     onClick: () => pickFamily(focused, m),
   }));
 
-  const customVersionInput = (m: CatalogModel) => (
-    <InlineInput
-      label={`${m.name} version`}
-      value={focused.customVersion ?? ""}
-      maxLength={16}
-      placeholder={m.versions[0] ? `e.g. ${m.versions[0].label}` : "Version"}
-      onChange={(value) => updateItem(focused.id, { customVersion: value })}
-    />
-  );
-  const customModelInput = (
-    <InlineInput
-      label={`${label} model name`}
-      value={focused.customModel ?? ""}
-      maxLength={32}
-      placeholder={tool ? "Model name" : "Model name, e.g. Mixtral 8x22B"}
-      onChange={(value) => updateItem(focused.id, { customModel: value })}
-    />
-  );
-
   const overflowButton = (count: number) =>
     count > 0 && (
       <button
@@ -141,6 +112,12 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
         +{count}
       </button>
     );
+
+  const nonePill = hasChoice ? (
+    <ChoicePill pressed={false} onClick={() => clearModel(focused)} ghost>
+      None
+    </ChoicePill>
+  ) : null;
 
   let row1: ReactNode;
   let row2: ReactNode = null;
@@ -157,11 +134,10 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
       </button>
     );
   } else if (models.length === 0) {
-    row1 = customModelInput;
+    row1 = nonePill;
   } else if (single) {
     const choices = versionChoices(single, true);
     const shown = fitRow(choices, rowWidth);
-    const otherActive = isCustomVersionActive(focused, single);
     row1 = (
       <>
         {shown.map((c) => (
@@ -170,12 +146,9 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
           </ChoicePill>
         ))}
         {overflowButton(choices.length - shown.length)}
-        <ChoicePill pressed={otherActive} onClick={() => toggleOtherVersion(focused, single, true)}>
-          Other
-        </ChoicePill>
+        {nonePill}
       </>
     );
-    if (otherActive) row2 = customVersionInput(single);
   } else {
     const shown = fitRow(familyChoices, rowWidth);
     row1 = (
@@ -186,17 +159,12 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
           </ChoicePill>
         ))}
         {overflowButton(familyChoices.length - shown.length)}
-        <ChoicePill pressed={customModel} onClick={() => toggleOtherModel(focused)}>
-          Other
-        </ChoicePill>
+        {nonePill}
       </>
     );
-    if (customModel) {
-      row2 = customModelInput;
-    } else if (model && model.versions.length > 0) {
+    if (model && model.versions.length > 0) {
       const choices = versionChoices(model, false);
       const shownVersions = fitRow(choices, rowWidth - 14);
-      const otherActive = isCustomVersionActive(focused, model);
       row2 = (
         <>
           {shownVersions.map((c) => (
@@ -205,16 +173,12 @@ export function ModelStrip({ items, focused, onFocus, onOpenDetails, detailsOpen
             </ChoicePill>
           ))}
           {overflowButton(choices.length - shownVersions.length)}
-          <ChoicePill pressed={otherActive} onClick={() => toggleOtherVersion(focused, model, false)}>
-            Other
-          </ChoicePill>
-          {otherActive && customVersionInput(model)}
         </>
       );
     }
   }
 
-  const versionRow = Boolean(model && !single && !customModel && row2);
+  const versionRow = Boolean(model && !single && row2);
 
   return (
     <div className="mt-auto h-[98px] border-t border-hairline pt-2">

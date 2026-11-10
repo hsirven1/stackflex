@@ -5,7 +5,7 @@ import { BuilderView } from "@/components/builder/BuilderView";
 import { GuidedBuilder } from "@/components/guided/GuidedBuilder";
 import { LandingView } from "@/components/landing/LandingView";
 import { ResultsView } from "@/components/results/ResultsView";
-import { finishGuide, resumeGuide, useGuide } from "@/lib/guide";
+import { finishGuide, resumeGuide } from "@/lib/guide";
 import { useHydrated, useStack } from "@/lib/selection/store";
 import { useRoute, type View } from "@/lib/view";
 import { AppChrome } from "./AppChrome";
@@ -15,9 +15,8 @@ export function StackFlexApp() {
   const stack = useStack();
   const hydrated = useHydrated();
   const route = useRoute();
-  const guide = useGuide();
 
-  // The bare URL (or an unknown hash) opens the landing page; it offers to resume a saved stack.
+  // The bare URL (or an unknown hash) opens the landing page; it links to a saved stack's Results.
   let view: View = route ?? "home";
   if (view === "results" && stack.items.length === 0) view = "guide";
 
@@ -32,7 +31,7 @@ export function StackFlexApp() {
   return (
     <>
       {view === "home" ? (
-        <LandingView stack={stack} guideActive={guide.active} />
+        <LandingView stack={stack} />
       ) : view === "guide" ? (
         <GuidedBuilder stack={stack} />
       ) : view === "results" ? (

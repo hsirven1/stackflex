@@ -196,9 +196,24 @@ export const MODELS: CatalogModel[] = [
     providerId: "moonshot",
     defaultToolId: "kimi",
     versions: [
+      { id: "k3", label: "K3" },
+      { id: "k2.7", label: "K2.7" },
       { id: "k2-thinking", label: "K2 Thinking" },
       { id: "k2", label: "K2" },
     ],
+    openRouterIds: ["moonshotai/kimi-k3", "moonshotai/kimi-k2.7", "moonshotai/kimi-k2-thinking", "moonshotai/kimi-k2"],
+  },
+  {
+    id: "glm",
+    name: "GLM",
+    providerId: "zhipu",
+    defaultToolId: "glm-chat",
+    versions: [
+      { id: "5", label: "5" },
+      { id: "4.7", label: "4.7" },
+      { id: "4.6", label: "4.6" },
+    ],
+    openRouterIds: ["z-ai/glm-5", "z-ai/glm-4.7", "z-ai/glm-4.6"],
   },
   {
     id: "sonar",
@@ -342,7 +357,8 @@ export const FRONTIER_LLMS = [
   "deepseek",
   "qwen",
   "kimi",
+  "glm",
 ];
 
 /** Open-weight families typically run locally or via inference providers. */
-export const OPEN_WEIGHT_LLMS = ["llama", "qwen", "deepseek", "gpt-oss", "gemma", "mistral", "kimi"];
+export const OPEN_WEIGHT_LLMS = ["llama", "qwen", "deepseek", "gpt-oss", "gemma", "mistral", "kimi", "glm"];

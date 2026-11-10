@@ -163,21 +163,26 @@ interface MoreToolsProps {
   selectedIds: Set<string>;
   full: boolean;
   onToggle: (tool: CatalogTool) => void;
+  /**
+   * Tool ids already shown in the main grid (so they don't repeat here). Defaults to the category's
+   * full featured list; the questionnaire passes only the currently visible slice.
+   */
+  excludeIds?: Iterable<string>;
 }
 
 /** Panel body: everything else in the category, contextual search, and a custom-tool fallback. */
-export function MoreTools({ category, owned, selectedIds, full, onToggle }: MoreToolsProps) {
+export function MoreTools({ category, owned, selectedIds, full, onToggle, excludeIds }: MoreToolsProps) {
   const id = useId();
   const [query, setQuery] = useState("");
   const q = normalize(query);
-  const quick = new Set(category.quickPicks);
+  const excluded = new Set(excludeIds ?? category.quickPicks);
 
   const results: CatalogTool[] = q
     ? catalog
         .search(query, { limit: MAX_RESULTS + 4, includeModels: false, preferCategory: category.id })
         .flatMap((r) => (r.kind === "tool" ? [r.tool] : []))
         .slice(0, MAX_RESULTS)
-    : catalog.toolsInCategory(category.id).filter((t) => !quick.has(t.id));
+    : catalog.toolsInCategory(category.id).filter((t) => !excluded.has(t.id));
   const exactMatch = q
     ? Boolean(catalog.resolveToolByName(query)) || owned.some((i) => normalize(itemLabel(i)) === q)
     : true;

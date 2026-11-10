@@ -30,5 +30,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "design_handoff_stackflex"]
+  "exclude": [
+    "node_modules",
+    "design_handoff_stackflex",
+    "stackflex-design-handoff-v2",
+    "design-handoff",
+    "stackflex-logo-kit"
+  ]
 }

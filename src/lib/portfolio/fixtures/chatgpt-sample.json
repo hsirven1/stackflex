@@ -1,0 +1,47 @@
+{
+  "format": "stackflex-ai-activity-v1",
+  "provider": "chatgpt",
+  "generatedAt": "2026-04-01T12:00:00Z",
+  "scope": {
+    "limitations": "Based only on this conversation and prior memory shared in ChatGPT. Not a complete history of all chats."
+  },
+  "projects": [
+    {
+      "title": "Competitive landscape brief for a consumer app concept",
+      "description": "Used ChatGPT to structure public market questions, then drafted a one-page brief summarizing positioning themes and open risks for a fictional product launch.",
+      "type": "analysis",
+      "status": "completed",
+      "tools": ["ChatGPT", "Perplexity"],
+      "capabilities": ["Research", "Content Creation"],
+      "outcome": "Delivered a concise brief used to align a fictional product team on messaging.",
+      "evidence": "self_reported"
+    },
+    {
+      "title": "Weekly status digest workflow",
+      "description": "Designed a repeatable prompt workflow that turns scattered team updates into a structured weekly digest draft for a fictional remote squad.",
+      "type": "workflow",
+      "status": "completed",
+      "tools": ["ChatGPT"],
+      "capabilities": ["AI Automation", "Content Creation"],
+      "evidence": "observed"
+    },
+    {
+      "title": "Onboarding FAQ rewrite",
+      "description": "Rewrote a fictional product’s onboarding FAQ for clarity and tone consistency with AI assistance, including three alternate phrasings for key answers.",
+      "type": "deliverable",
+      "status": "completed",
+      "tools": ["ChatGPT"],
+      "capabilities": ["Content Creation", "Writing"],
+      "evidence": "self_reported"
+    },
+    {
+      "title": "Agent experiment for inbox triage",
+      "description": "Explored a planned agent that would label and prioritize inbound requests; only discussed approaches, no working system shipped.",
+      "type": "project",
+      "status": "planned",
+      "tools": ["ChatGPT"],
+      "capabilities": ["Agent Development"],
+      "evidence": "inferred"
+    }
+  ]
+}

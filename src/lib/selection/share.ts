@@ -9,7 +9,7 @@ type Stack = Pick<StackState, "items">;
 
 export const X_LIMIT = 280;
 export const README_IMAGE_PATH = "./assets/stackflex-badges.png";
-export const README_HEADING = "My AI Stack";
+export const README_HEADING = "My AI stack";
 
 const LINKEDIN_PHRASE: Record<CategoryId, string> = {
   daily: "daily AI",
@@ -17,7 +17,7 @@ const LINKEDIN_PHRASE: Record<CategoryId, string> = {
   creative: "creative work",
   automation: "automation",
   research: "research",
-  local: "local AI",
+  local: "models & platforms",
 };
 
 const X_LABEL: Record<CategoryId, string> = {
@@ -26,7 +26,7 @@ const X_LABEL: Record<CategoryId, string> = {
   creative: "Creative",
   automation: "Automation",
   research: "Research",
-  local: "Local",
+  local: "Platforms",
 };
 
 interface Group {

@@ -1,0 +1,38 @@
+/* StackFlex Results / Reveal. Import once (e.g. in app/globals.css) after your existing StackFlex styles.
+   Fonts: expects --font-display (Funnel Display) and --font-sans (Funnel Sans), already provided by
+   lib/stackflex/fonts.ts in the existing app. Components fall back to the family names. */
+
+/* Page background grid (approved 1e): 48px, #F1EFEA, faded toward the edges */
+.sfr-grid {
+  background-image: linear-gradient(#F1EFEA 1px, transparent 1px), linear-gradient(90deg, #F1EFEA 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(60% 55% at 50% 45%, #000, transparent);
+  mask-image: radial-gradient(60% 55% at 50% 45%, #000, transparent);
+}
+
+/* Reveal, under 0.8s, plays once on mount */
+.sfr-card-in { animation: sfr-in 320ms cubic-bezier(.2, .8, .2, 1) both; transform-origin: 50% 50%; }
+@keyframes sfr-in {
+  from { opacity: 0; transform: perspective(1200px) rotateY(-18deg) scale(.94) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.sfr-sheen {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.95) 48%, rgba(190,170,255,.4) 54%, transparent 66%);
+  transform: translateX(-120%);
+  animation: sfr-sheen 300ms 320ms ease-in-out forwards;
+}
+@keyframes sfr-sheen { to { transform: translateX(120%); } }
+.sfr-rise { animation: sfr-rise 200ms 560ms ease-out both; }
+@keyframes sfr-rise { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sfr-card-in { animation: sfr-fade 200ms ease-out both; }
+  .sfr-sheen { display: none; }
+  .sfr-rise { animation: none; }
+}
+@keyframes sfr-fade { from { opacity: 0; } }
+
+/* Export safety: anything inside an export frame renders its final static frame */
+[data-sf-export] .sfr-card-in, [data-sf-export] .sfr-rise { animation: none !important; opacity: 1 !important; transform: none !important; }
+[data-sf-export] .sfr-sheen { display: none !important; }

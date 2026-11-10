@@ -37,11 +37,45 @@ export interface CatalogModel {
   openRouterIds?: string[];
 }
 
+/** Discovery taxonomy for AI inside everyday business platforms. */
+export type BusinessCategoryId =
+  | "marketing"
+  | "sales-crm"
+  | "commerce"
+  | "product-projects"
+  | "operations"
+  | "customer-support";
+
+export type ToolType = "ai-native" | "business-ai";
+
+/**
+ * Primary signal for AI working-style classification.
+ * Distinct from personal purpose (`CategoryId`) and picker discovery.
+ */
+export type WorkingStyleCategoryId =
+  | "assistant"
+  | "work_apps"
+  | "build"
+  | "agents"
+  | "create"
+  | "research"
+  | "meetings"
+  | "local";
+
+export interface AiCapability {
+  /** Stable id stored on selections / snapshots. */
+  id: string;
+  /** Plain-language label shown in the optional capability picker. */
+  label: string;
+}
+
 export interface CatalogTool {
   id: string;
   name: string;
   providerId: string;
   iconSlug?: string;
+  /** Fallback letters when no logo asset exists. */
+  monogram?: string;
   categories: CategoryId[];
   /** Short plain description, used as badge attribution when the provider shares the tool's name. */
   descriptor: string;
@@ -49,6 +83,22 @@ export interface CatalogTool {
   modelIds?: string[];
   /** Approved card color (6-digit hex). Tools without one use the neutral card color. */
   aura?: string;
+  /**
+   * How the tool is discovered. Defaults to ai-native.
+   * business-ai = AI capability inside a business platform (not the platform alone).
+   */
+  toolType?: ToolType;
+  /** Parent product/platform when this entry represents an AI feature (e.g. HubSpot for Breeze). */
+  parentPlatform?: string;
+  /** Business discovery subcategories (tools may belong to several). */
+  businessCategories?: BusinessCategoryId[];
+  /** Optional curated AI features the user can claim later — never auto-selected. */
+  aiCapabilities?: AiCapability[];
+  /**
+   * Primary working-style bucket for classification.
+   * When omitted, derived from toolType / categories via `workingStyleCategoryFor`.
+   */
+  workingStyleCategory?: WorkingStyleCategoryId;
 }
 
 export interface Category {

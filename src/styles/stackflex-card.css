@@ -1,0 +1,80 @@
+/* StackFlex card, final (Oct 2026). Import in app/globals.css after stackflex.css:
+   @import "../styles/stackflex-card.css";
+   All sizes derive from the card width via container query units (cqw): one card from 88px to 400px+. */
+
+.sf-card { position: relative; aspect-ratio: 1 / 1; min-width: 0; container-type: inline-size; }
+
+.sf-card__body {
+  position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box;
+  border-radius: clamp(12px, 13cqw, 30px);
+  border: 1px solid #ECEAE4;
+  color: #0B0B0C; font-family: var(--font-sans);
+  /* secondary: pearl base + tool tint @26% rising from 32% height */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0) 32%, var(--sf-tint)),
+    linear-gradient(165deg, #FFFFFF 0%, #F7F5F1 60%, #F0EDE7 100%);
+}
+.sf-card--main .sf-card__body {
+  background: linear-gradient(180deg, var(--sf-top) 0%, rgba(255,255,255,0) 40%), linear-gradient(165deg, #FFFFFF 0%, #F8F6F2 100%);
+  border-color: var(--sf-edge);
+  box-shadow: 0 16px 34px -22px rgba(60,40,140,.38);
+}
+
+/* Layers (absolute, under the content) */
+.sf-card__layer { position: absolute; inset: 0; pointer-events: none; }
+.sf-card__light { /* secondary reflection: barely visible */
+  background: linear-gradient(118deg, transparent 34%, rgba(180,200,240,.05) 43%, rgba(255,255,255,.35) 47%, rgba(240,205,220,.05) 51%, transparent 60%);
+}
+.sf-card__holo {
+  background: conic-gradient(from 210deg at 62% 38%, rgba(255,150,170,0), rgba(255,200,110,.7), rgba(130,235,185,.62), rgba(110,180,255,.7), rgba(195,150,255,.7), rgba(255,150,170,0));
+  mix-blend-mode: multiply; opacity: .55;
+}
+.sf-card__glow { background: radial-gradient(95% 70% at 15% 100%, var(--sf-glow), transparent 72%); }
+.sf-card--main .sf-card__light {
+  background: linear-gradient(118deg, transparent 24%, rgba(140,190,255,.28) 36%, rgba(255,255,255,.9) 43%, rgba(255,190,150,.28) 50%, transparent 61%);
+}
+.sf-card__streak2 { background: linear-gradient(118deg, transparent 62%, rgba(255,255,255,.55) 66%, transparent 70%); }
+
+/* Content */
+.sf-card__header {
+  position: relative; flex: none; display: flex; align-items: center; justify-content: center;
+  height: clamp(20px, 13.3cqw, 27.6px);
+  background: rgba(255,255,255,.7); border-bottom: 1px solid rgba(11,11,12,.06);
+  font-size: clamp(9px, 5.8cqw, 12px); font-weight: 600; line-height: 1;
+  letter-spacing: .14em; text-transform: uppercase; color: #2A2925; white-space: nowrap;
+}
+.sf-card--main .sf-card__header { background: rgba(255,255,255,.28); border-bottom-color: rgba(11,11,12,.07); }
+
+.sf-card__stage { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.sf-card__coin {
+  position: relative; width: 34cqw; aspect-ratio: 1; border-radius: 50%; background: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 clamp(2.5px, 2.5cqw, 5px) var(--sf-ring), 0 6px 14px -8px rgba(11,11,12,.22);
+}
+.sf-card__logo { width: 50%; height: 50%; object-fit: contain; }
+.sf-card__mono { font-family: var(--font-display); font-weight: 500; font-size: 15cqw; line-height: 1; }
+.sf-card__main {
+  position: absolute; right: -6%; top: -6%;
+  width: clamp(13px, 10cqw, 22px); aspect-ratio: 1; border-radius: 50%;
+  background: #3A2EFF; color: #FFFFFF; box-shadow: 0 0 0 2px #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(8px, 6cqw, 13px); line-height: 1;
+}
+
+.sf-card__text { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 0 clamp(8px, 7.5cqw, 16px) clamp(8px, 7.5cqw, 16px); }
+.sf-card__name {
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: var(--font-display); font-weight: 600; line-height: 1.05; letter-spacing: -0.025em;
+  font-size: clamp(12.5px, 10.5cqw, 24px);
+}
+.sf-card__ver { height: 1.2em; font-size: clamp(10.5px, 7.8cqw, 15px); line-height: 1.2; font-weight: 500; color: #55534D; white-space: nowrap; }
+
+/* Compact: under 120px. Same content, tuned proportions. Never render below 88px; use StackChip instead. */
+@container (max-width: 119px) {
+  .sf-card__header { letter-spacing: .1em; }
+  .sf-card__coin { width: 32cqw; }
+  .sf-card__logo { width: 54%; height: 54%; }
+  .sf-card__main { right: -4%; top: -4%; }
+  .sf-card__text { gap: 1px; }
+  .sf-card__name { letter-spacing: -0.03em; }
+}

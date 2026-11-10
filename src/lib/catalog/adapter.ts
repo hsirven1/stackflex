@@ -131,7 +131,7 @@ export function createLocalCatalog(data: {
         let score = Math.max(
           bestScore(q, [tool.name]),
           bestScore(q, tool.aliases ?? [], 0.85),
-          bestScore(q, [provider?.name], 0.5),
+          bestScore(q, [provider?.name, tool.parentPlatform], 0.5),
           bestScore(q, [tool.descriptor], 0.3),
         );
         if (score <= 0) continue;

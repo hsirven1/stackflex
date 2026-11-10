@@ -1,0 +1,146 @@
+[
+  {
+    "tool": "Z.ai",
+    "slug": "zai",
+    "source": "https://github.com/lobehub/lobe-icons/blob/master/packages/static-svg/icons/zai.svg",
+    "source_type": "maintained-icon-library",
+    "direct": "https://raw.githubusercontent.com/lobehub/lobe-icons/master/packages/static-svg/icons/zai.svg",
+    "status": "downloadable",
+    "note": "Lobe Icons implementation, not Z.ai's own asset kit."
+  },
+  {
+    "tool": "HeyGen",
+    "slug": "heygen",
+    "source": "https://www.heygen.com/brand-kit",
+    "source_type": "official-brand-kit",
+    "direct": "https://dynamic.heygen.ai/Heygen%20Brand-kit/heygen-brandkit.zip",
+    "status": "downloadable-archive",
+    "note": "Select the symbol from the ZIP. Read HeyGen's trademark usage guidelines."
+  },
+  {
+    "tool": "Descript",
+    "slug": "descript",
+    "source": "https://feedback.descript.com/changelog",
+    "source_type": "official-company-announcement",
+    "direct": null,
+    "status": "manual-review",
+    "note": "Descript changed from blue to red branding in February 2026; ensure the new mark is used."
+  },
+  {
+    "tool": "OpusClip",
+    "slug": "opusclip",
+    "source": "https://media.opus.pro/",
+    "source_type": "official-media-kit",
+    "direct": "https://cdn.gamma.app/qlrbh11r2oqp2um/cf863777e4f24d9480a4c47fdf2b5c16/original/Icon_W.png",
+    "status": "downloadable-review",
+    "note": "Official media kit icon variant named Icon_W; verify visibility and suitability on the chosen background."
+  },
+  {
+    "tool": "Synthesia",
+    "slug": "synthesia",
+    "source": "https://www.synthesia.io/newsroom",
+    "source_type": "official-media-kit",
+    "direct": null,
+    "status": "manual-download",
+    "note": "Newsroom links to an official media pack on Google Drive."
+  },
+  {
+    "tool": "Granola",
+    "slug": "granola",
+    "source": "https://asvg.app/icons/granola",
+    "source_type": "third-party-2026-mark",
+    "direct": null,
+    "status": "manual-review",
+    "note": "Granola rebranded February 2026. Compare against granola.ai and its current product icon; do not use the pre-2026 mark."
+  },
+  {
+    "tool": "Elicit",
+    "slug": "elicit",
+    "source": "https://brandfetch.com/elicit.com",
+    "source_type": "third-party-brand-directory",
+    "direct": null,
+    "status": "manual-review",
+    "note": "This means the AI research product at elicit.com. Do not use unrelated elicittechnology.com logos."
+  },
+  {
+    "tool": "Gamma",
+    "slug": "gamma",
+    "source": "https://brandfetch.com/gamma.app",
+    "source_type": "third-party-brand-directory",
+    "direct": null,
+    "status": "manual-review",
+    "note": "This means Gamma presentation tool at gamma.app. Do not use unrelated gammaai.jp logos."
+  },
+  {
+    "tool": "Otter.ai",
+    "slug": "otter",
+    "source": "https://otter.ai/media-kit",
+    "source_type": "official-media-kit",
+    "direct": "https://public.otter.ai/img/blue-vertical.svg",
+    "status": "downloadable",
+    "note": "Official blue vertical SVG. Review whether an icon-only Otter variant is available for narrow circles."
+  },
+  {
+    "tool": "Fireflies.ai",
+    "slug": "fireflies",
+    "source": "https://brandfetch.com/fireflies.ai",
+    "source_type": "third-party-brand-directory",
+    "direct": null,
+    "status": "manual-review",
+    "note": "Use the current Fireflies.ai symbol if its source can be validated."
+  },
+  {
+    "tool": "llama.cpp",
+    "slug": "llama-cpp",
+    "source": "https://github.com/ggml-org/llama.brand",
+    "source_type": "official-github-brand-repository",
+    "direct": "https://raw.githubusercontent.com/ggml-org/llama.cpp/master/media/llama1-logo.svg",
+    "status": "downloadable-review",
+    "note": "Direct SVG is an older project mark; compare with the newer llama.brand repository. Newer branding is under CC BY-NC 4.0 and separate BRAND-USAGE.md terms."
+  },
+  {
+    "tool": "Klaviyo AI",
+    "slug": "klaviyo-ai",
+    "source": "https://brandfetch.com/klaviyo.com",
+    "source_type": "third-party-parent-brand",
+    "direct": null,
+    "status": "manual-review",
+    "note": "Corporate Klaviyo symbol is acceptable only as a clearly identified parent-brand fallback; not a distinct AI-product mark."
+  },
+  {
+    "tool": "Jasper",
+    "slug": "jasper",
+    "source": "https://www.jasper.ai/brand",
+    "source_type": "official-brand-kit",
+    "direct": "https://22774847.fs1.hubspotusercontent-na1.net/hubfs/22774847/Jasper%20Logos%20%282025%29/Jasper%20Logo%20%282025%29.svg",
+    "status": "downloadable",
+    "note": "Official Jasper SVG wordmark; look for a compact icon if necessary."
+  },
+  {
+    "tool": "Gong AI",
+    "slug": "gong-ai",
+    "source": "https://brandfetch.com/gong.io",
+    "source_type": "third-party-parent-brand",
+    "direct": null,
+    "status": "manual-review",
+    "note": "Gong corporate symbol is a fallback unless there is a distinct Gong AI product mark."
+  },
+  {
+    "tool": "Gorgias AI",
+    "slug": "gorgias-ai",
+    "source": "https://www.gorgias.com/about-us/style",
+    "source_type": "official-brand-kit",
+    "direct": "https://cdn.prod.website-files.com/5e4ff204e7b6f80e402d407a/6930636333e23ee72770aa66_gorgias_brand_asset_2023.zip",
+    "status": "downloadable-archive",
+    "note": "Select official Gorgias symbol from archive. Parent-brand fallback rather than distinct Gorgias AI identity."
+  },
+  {
+    "tool": "Productboard AI",
+    "slug": "productboard-ai",
+    "source": "https://www.productboard.com/media-kit/",
+    "source_type": "official-brand-kit",
+    "direct": "https://cdn.productboard.com/logos/logomark-color-preferred.zip",
+    "status": "downloadable-archive",
+    "note": "Official Productboard vessel icon; parent-brand fallback for Productboard AI."
+  }
+]

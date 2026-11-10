@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
+import { Search, X } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState, type ComponentProps, type FormEvent } from "react";
 import { HomeLink } from "@/components/app/HomeLink";
 import { Wordmark } from "@/components/stackflex/Brand";
 import {
@@ -11,329 +12,429 @@ import {
   TextButton,
   ToolOption,
 } from "@/components/stackflex/Controls";
-import { StackBoard } from "@/components/stackflex/StackBoard";
 import { ToolLogo } from "@/components/stackflex/ToolLogo";
-import { MoreTools } from "@/components/selector/CategoryCard";
-import { InlineModelPicker } from "@/components/selector/InlineModelPicker";
-import { catalog } from "@/lib/catalog/adapter";
-import type { CatalogTool, Category } from "@/lib/catalog/types";
-import { setGuideStep, useGuide } from "@/lib/guide";
-import { itemLabel, itemModelLabel, itemsInCategory, modelPickerMode } from "@/lib/selection/derive";
-import { removeItem, toggleTool } from "@/lib/selection/store";
-import { MAX_BADGES, type SelectedItem, type StackState } from "@/lib/selection/types";
-import { stackTools, toolFromCatalog, toolFromItem } from "@/lib/stackflex/tools";
+import { catalog, normalize } from "@/lib/catalog/adapter";
+import { defaultPurposeFor } from "@/lib/catalog/discovery";
+import type { CatalogTool, CategoryId } from "@/lib/catalog/types";
+import { finishGuide, resumeGuide, setGuideStep, useGuide } from "@/lib/guide";
+import { track } from "@/lib/integrations/analytics";
+import { markResultsReveal } from "@/lib/motion";
+import { roleLabel, type ProfessionalRole } from "@/lib/profile/roles";
+import { setProfile, useProfile } from "@/lib/profile/store";
+import { addCustomTool, removeItem, toggleTool } from "@/lib/selection/store";
+import { MAX_BADGES, type StackState } from "@/lib/selection/types";
+import { stackTools, toolFromCatalog, type Tool } from "@/lib/stackflex/tools";
 import { navigate } from "@/lib/view";
-import { GUIDE_STEPS, stepIndexForCategory, type GuideStep } from "./steps";
+import { GenerateSequence } from "./GenerateSequence";
+import {
+  clampGuideStep,
+  GUIDE_FLOW,
+  GUIDE_STEP_COUNT,
+  ROLE_OPTIONS,
+  stackHasAssistant,
+  type GuideToolStep,
+} from "./steps";
 
-const PAD = "px-5 md:px-10 xl:px-[120px]";
-
-/** Default flow: one category question per screen, with the stack assembling in the tray below. */
+/**
+ * Stepped AI profile onboarding.
+ * Multi-select tools across categories, role last, then generate profile.
+ * Models stay out of this flow; they remain editable from the profile.
+ */
 export function GuidedBuilder({ stack }: { stack: StackState }) {
   const guide = useGuide();
-  const index = Math.min(guide.step, GUIDE_STEPS.length - 1);
-  const step = GUIDE_STEPS[index];
-  const category = catalog.category(step.categoryId);
-  const last = index === GUIDE_STEPS.length - 1;
-  const [askedForTool, setAskedForTool] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const profile = useProfile();
+  const stepIndex = clampGuideStep(guide.step);
+  const step = GUIDE_FLOW[stepIndex]!;
+  const [generating, setGenerating] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customName, setCustomName] = useState("");
+  const [query, setQuery] = useState("");
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const moved = useRef(false);
-  const needsTool = askedForTool && stack.items.length === 0;
-  const total = GUIDE_STEPS.length;
+  const searchRef = useRef<HTMLInputElement>(null);
+  const searchPanelId = useId();
+
+  const tools = stackTools(stack);
+  const count = stack.items.length;
+  const selectedIds = useMemo(() => new Set(stack.items.map((i) => i.id)), [stack.items]);
+  const full = count >= MAX_BADGES;
+  const hasAssistant = useMemo(() => stackHasAssistant(stack.items), [stack.items]);
+  const isFirst = stepIndex === 0;
+  const isRole = step.kind === "role";
 
   useEffect(() => {
-    if (moved.current) headingRef.current?.focus({ preventScroll: true });
-  }, [index]);
+    resumeGuide();
+  }, []);
 
-  function goTo(next: number) {
-    moved.current = true;
-    setAskedForTool(false);
-    setMoreOpen(false);
-    setGuideStep(next);
-    window.scrollTo({ top: 0 });
+  // Step 1 is mandatory: never stay past assistants without at least one selected.
+  useEffect(() => {
+    if (!hasAssistant && stepIndex > 0) {
+      setGuideStep(0);
+    }
+  }, [hasAssistant, stepIndex]);
+
+  useEffect(() => {
+    headingRef.current?.focus({ preventScroll: true });
+  }, [stepIndex]);
+
+  function resetStepUi() {
+    setSearchOpen(false);
+    setCustomOpen(false);
+    setQuery("");
+    setCustomName("");
+  }
+
+  const featuredTools = useMemo(() => {
+    if (step.kind !== "tools") return [] as Tool[];
+    const purpose = step.purposeHint;
+    return step.featuredIds
+      .map((id) => catalog.tool(id))
+      .filter((t): t is CatalogTool => Boolean(t))
+      .map((t) => toolFromCatalog(t, purpose));
+  }, [step]);
+
+  const allCatalogTools = useMemo(() => {
+    const seen = new Set<string>();
+    const list: CatalogTool[] = [];
+    for (const cat of catalog.categories()) {
+      for (const t of catalog.toolsInCategory(cat.id)) {
+        if (seen.has(t.id)) continue;
+        seen.add(t.id);
+        list.push(t);
+      }
+    }
+    return list;
+  }, []);
+
+  const q = normalize(query);
+  const searchResults = useMemo(() => {
+    if (!q) return [] as CatalogTool[];
+    return allCatalogTools
+      .filter((t) => toolMatchesQuery(t, q))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, 40);
+  }, [allCatalogTools, q]);
+
+  function purposeForAdd(tool: CatalogTool): CategoryId {
+    if (step.kind === "tools") {
+      // Catch-all step: keep each tool's own catalog purpose for classification/display.
+      if (step.id === "other") return defaultPurposeFor(tool);
+      return step.purposeHint;
+    }
+    return defaultPurposeFor(tool);
+  }
+
+  function toggleCatalogTool(tool: CatalogTool) {
+    if (selectedIds.has(tool.id)) {
+      removeItem(tool.id);
+      return;
+    }
+    if (full) return;
+    toggleTool(tool.id, purposeForAdd(tool), "quick_pick");
+  }
+
+  function completeOnboarding() {
+    if (!hasAssistant) return;
+    track({ name: "onboarding_completed", props: {} });
+    finishGuide();
+    setGenerating(true);
   }
 
   function advance() {
-    if (!last) return goTo(index + 1);
-    if (stack.items.length === 0) return setAskedForTool(true);
-    navigate("results");
+    if (isFirst && !hasAssistant) return;
+    if (stepIndex >= GUIDE_STEP_COUNT - 1) {
+      completeOnboarding();
+      return;
+    }
+    resetStepUi();
+    setGuideStep(stepIndex + 1);
   }
 
-  function openItem(itemId: string) {
-    const item = stack.items.find((i) => i.id === itemId);
-    const target = item ? stepIndexForCategory(item.categoryId) : -1;
-    if (target >= 0 && target !== index) goTo(target);
+  function goNext() {
+    advance();
   }
 
-  if (!category) return null;
+  function goBack() {
+    if (stepIndex <= 0) {
+      navigate("home");
+      return;
+    }
+    resetStepUi();
+    setGuideStep(stepIndex - 1);
+  }
 
-  const actions = (
-    <div className="flex flex-col items-end gap-2 self-end lg:self-auto">
-      <div className="flex items-center gap-7">
-        <TextButton onClick={() => (index > 0 ? goTo(index - 1) : navigate("home"))}>Back</TextButton>
-        <TextButton onClick={advance}>Skip</TextButton>
-        <PrimaryButton onClick={advance}>{last ? "Generate my stack" : "Next"}</PrimaryButton>
-      </div>
-      <p role="status" className="text-[15px] font-medium">
-        {needsTool && "Pick at least one tool first, then we’ll make your assets."}
-      </p>
-    </div>
-  );
+  /** Skip advances without changing selections. Role skip leaves role unspecified. */
+  function skipStep() {
+    if (isFirst) return;
+    if (isRole) {
+      setProfile({ professionalRole: undefined });
+      completeOnboarding();
+      return;
+    }
+    advance();
+  }
+
+  function selectRole(role: ProfessionalRole) {
+    setProfile({
+      professionalRole: role,
+      professionalTitle: profile.professionalTitle.trim() || roleLabel(role),
+    });
+  }
+
+  function submitCustom(e: FormEvent) {
+    e.preventDefault();
+    const name = customName.trim();
+    if (!name || full) return;
+    const purpose: CategoryId =
+      step.kind === "tools" ? (step as GuideToolStep).purposeHint : "daily";
+    addCustomTool(name, purpose);
+    setCustomName("");
+    setCustomOpen(false);
+    setSearchOpen(false);
+  }
+
+  /** Step 1 and finish require an assistant; steps 2–6 are always optional. */
+  const primaryLabel = isRole ? "Create my profile" : "Next";
+  const primaryDisabled = !hasAssistant && (isFirst || isRole);
 
   return (
-    <div className="flex min-h-svh flex-1 flex-col bg-white text-sf-ink">
-      <header className={`flex h-[88px] flex-none items-center justify-between gap-6 ${PAD}`}>
-        <HomeLink className="rounded-md text-sf-ink">
-          <Wordmark />
-        </HomeLink>
-        <div className="hidden md:block">
-          <StepIndicator step={index + 1} total={total} />
-        </div>
-        <div className="flex items-center gap-6">
-          <TextButton onClick={() => navigate("edit")} className="hidden text-[15px] sm:inline">
-            Edit full stack
-          </TextButton>
+    <div data-page className="fixed inset-0 z-0 flex flex-col overflow-hidden bg-white text-sf-ink">
+      <div inert={generating} className="flex min-h-0 flex-1 flex-col">
+        <header className="flex h-[56px] flex-none items-center justify-between gap-4 px-5 md:h-[64px] md:px-8 lg:px-10">
+          <HomeLink className="rounded-md text-sf-ink">
+            <Wordmark />
+          </HomeLink>
           <TextButton onClick={() => navigate("home")} className="text-[15px]">
             Exit
           </TextButton>
-        </div>
-      </header>
+        </header>
 
-      <main className="flex flex-1 flex-col">
-        <section
-          key={step.categoryId}
-          aria-labelledby="guide-question"
-          className={`flex flex-1 animate-step-in flex-col pb-10 pt-9 ${PAD}`}
-        >
-          <div className="mb-6 md:hidden">
-            <StepIndicator step={index + 1} total={total} />
-          </div>
-          <StepQuestion
-            step={step}
-            category={category}
-            stack={stack}
-            headingRef={headingRef}
-            moreOpen={moreOpen}
-            onMoreOpenChange={setMoreOpen}
-            actions={actions}
-          />
-        </section>
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+          <div className="mx-auto my-auto flex w-full max-w-[720px] flex-col px-5 py-5 md:px-8 md:py-6">
+            <StepIndicator step={stepIndex + 1} total={GUIDE_STEP_COUNT} />
 
-        <section
-          aria-labelledby="guide-tray"
-          className={`flex flex-none flex-col gap-6 border-t border-[#EEECE6] bg-white py-8 lg:h-[240px] lg:flex-row lg:items-center lg:gap-14 lg:py-0 ${PAD}`}
-        >
-          <div className="flex flex-col gap-1.5 lg:w-[200px] lg:flex-none">
-            <h2 id="guide-tray" className="font-display text-[26px] font-medium tracking-[-0.035em]">
-              Your stack
-            </h2>
-            <span className="text-[15px] text-sf-muted" aria-live="polite">
-              {stack.items.length} of {MAX_BADGES} picked
+            <span className="mt-4 text-[14px] font-medium text-sf-blue md:text-[15px]">
+              {step.eyebrow}
             </span>
+            <h1
+              id="guide-question"
+              ref={headingRef}
+              tabIndex={-1}
+              className="mt-1.5 font-display text-[32px] font-medium leading-[0.98] tracking-[-0.045em] outline-none md:text-[40px] lg:text-[44px]"
+            >
+              {step.question}
+            </h1>
+
+            {isRole ? (
+              <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                {ROLE_OPTIONS.map((role) => {
+                  const on = profile.professionalRole === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => selectRole(role.id)}
+                      className={`rounded-2xl px-4 py-4 text-left text-[15px] font-semibold transition-colors ${focusRing} ${
+                        on
+                          ? "bg-[#F3F1FF] text-sf-blue shadow-[inset_0_0_0_2px_#3A2EFF]"
+                          : "bg-[#FAF9F6] text-sf-ink shadow-[inset_0_0_0_1px_#E6E3DC] hover:shadow-[inset_0_0_0_1px_#CFCBC1]"
+                      }`}
+                    >
+                      {role.label}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
+                <div className="mt-6 grid grid-cols-3 justify-items-center gap-x-2 gap-y-5 sm:grid-cols-4 sm:gap-x-4 md:grid-cols-4 lg:grid-cols-5">
+                  {featuredTools.map((tool) => (
+                    <ToolOption
+                      key={tool.id}
+                      tool={tool}
+                      selected={selectedIds.has(tool.id)}
+                      unavailable={full && !selectedIds.has(tool.id)}
+                      onClick={() => {
+                        const cat = catalog.tool(tool.id);
+                        if (cat) toggleCatalogTool(cat);
+                      }}
+                    />
+                  ))}
+                  <MoreToolsOption
+                    expanded={searchOpen}
+                    controls={searchPanelId}
+                    onClick={() => {
+                      setSearchOpen((v) => !v);
+                      setCustomOpen(false);
+                      requestAnimationFrame(() => searchRef.current?.focus());
+                    }}
+                  />
+                </div>
+
+                {searchOpen && (
+                  <div
+                    id={searchPanelId}
+                    className="mt-6 rounded-[18px] border border-[#E6E3DC] bg-[#FAF9F6] p-4"
+                  >
+                    <label className="relative block">
+                      <span className="sr-only">Search all tools</span>
+                      <Search
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-sf-muted"
+                        strokeWidth={2.2}
+                      />
+                      <input
+                        ref={searchRef}
+                        type="search"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search the full catalog…"
+                        className={`h-11 w-full rounded-full border border-[#DAD7CF] bg-white pl-10 pr-10 text-[15px] text-sf-ink placeholder:text-sf-faint ${focusRing}`}
+                      />
+                      {query && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuery("");
+                            searchRef.current?.focus();
+                          }}
+                          className={`absolute right-2 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-sf-muted hover:bg-[#F3F1EB] ${focusRing}`}
+                          aria-label="Clear search"
+                        >
+                          <X className="size-3.5" strokeWidth={2.2} />
+                        </button>
+                      )}
+                    </label>
+
+                    {q && (
+                      <ul className="mt-3 max-h-[220px] overflow-y-auto">
+                        {searchResults.length === 0 ? (
+                          <li className="px-1 py-3 text-[13.5px] text-sf-muted">No matching tools</li>
+                        ) : (
+                          searchResults.map((t) => {
+                            const on = selectedIds.has(t.id);
+                            return (
+                              <li key={t.id}>
+                                <button
+                                  type="button"
+                                  aria-pressed={on}
+                                  disabled={full && !on}
+                                  onClick={() => toggleCatalogTool(t)}
+                                  className={`flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-white disabled:opacity-40 ${focusRing}`}
+                                >
+                                  <span className="flex size-9 items-center justify-center rounded-full bg-white shadow-[0_0_0_1px_#E6E3DC]">
+                                    <ToolLogo
+                                      tool={toolFromCatalog(t, purposeForAdd(t))}
+                                      size="18px"
+                                      monogramSize="14px"
+                                    />
+                                  </span>
+                                  <span className="min-w-0 flex-1 text-[14px] font-semibold text-sf-ink">
+                                    {t.name}
+                                  </span>
+                                  <span className="text-[12px] font-semibold text-sf-muted">
+                                    {on ? "Selected" : "Add"}
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })
+                        )}
+                      </ul>
+                    )}
+
+                    {!customOpen ? (
+                      <button
+                        type="button"
+                        onClick={() => setCustomOpen(true)}
+                        className={`mt-3 rounded-md text-[13px] font-semibold text-sf-muted hover:text-sf-ink ${focusRing}`}
+                      >
+                        + Other (custom tool)
+                      </button>
+                    ) : (
+                      <form onSubmit={submitCustom} className="mt-3 flex flex-wrap items-center gap-2">
+                        <input
+                          value={customName}
+                          onChange={(e) => setCustomName(e.target.value.slice(0, 32))}
+                          placeholder="Tool name"
+                          maxLength={32}
+                          className={`h-10 min-w-[180px] flex-1 rounded-full border border-[#DAD7CF] bg-white px-4 text-[14px] ${focusRing}`}
+                          autoFocus
+                        />
+                        <button
+                          type="submit"
+                          disabled={!customName.trim() || full}
+                          className={`h-10 rounded-full bg-sf-ink px-4 text-[13px] font-semibold text-white disabled:opacity-40 ${focusRing}`}
+                        >
+                          Add
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center">
+                {stepIndex > 0 && <GuideNavButton onClick={goBack}>Back</GuideNavButton>}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                {isFirst && !hasAssistant && (
+                  <p id="assistants-hint" className="text-[13px] font-medium text-sf-muted">
+                    Select at least one AI assistant to continue
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  {!isFirst && <GuideNavButton onClick={skipStep}>Skip</GuideNavButton>}
+                  <PrimaryButton
+                    size={isRole ? undefined : "sm"}
+                    onClick={goNext}
+                    disabled={primaryDisabled}
+                    aria-describedby={isFirst && !hasAssistant ? "assistants-hint" : undefined}
+                    className={primaryDisabled ? "opacity-40" : ""}
+                  >
+                    {primaryLabel}
+                  </PrimaryButton>
+                </div>
+              </div>
+            </div>
           </div>
-          <StackBoard
-            tools={stackTools(stack)}
-            layout="tray"
-            highlightLast
-            onAdd={() => setMoreOpen(true)}
-            onOpen={(t) => openItem(t.id)}
-            onRemove={(t) => removeItem(t.id)}
-            className="w-full max-w-[480px]"
-          />
-          <p className="max-w-[260px] flex-1 text-sm leading-normal text-sf-subtle">
-            Your first pick is the main card. You can change it later in Edit stack.
-          </p>
-        </section>
-      </main>
-    </div>
-  );
-}
-
-interface StepQuestionProps {
-  step: GuideStep;
-  category: Category;
-  stack: StackState;
-  headingRef: RefObject<HTMLHeadingElement | null>;
-  moreOpen: boolean;
-  onMoreOpenChange: (open: boolean) => void;
-  actions: ReactNode;
-}
-
-function StepQuestion({ step, category, stack, headingRef, moreOpen, onMoreOpenChange, actions }: StepQuestionProps) {
-  const [focusId, setFocusId] = useState<string>();
-  const moreId = useId();
-  const full = stack.items.length >= MAX_BADGES;
-  const selectedIds = new Set(stack.items.map((i) => i.id));
-  const owned = itemsInCategory(stack, category.id);
-  const quickPicks = category.quickPicks
-    .map((toolId) => catalog.tool(toolId))
-    .filter((t): t is CatalogTool => Boolean(t));
-  const extras = owned.filter((i) => !category.quickPicks.includes(i.id));
-  const modelItems = owned.filter((i) => modelPickerMode(i) !== "none");
-
-  function toggle(tool: CatalogTool, source: "quick_pick" | "more") {
-    if (toggleTool(tool.id, category.id, source) === "added") setFocusId(tool.id);
-  }
-
-  return (
-    <>
-      <span className="text-[17px] font-medium text-sf-blue">{category.cardLabel}</span>
-      <h1
-        id="guide-question"
-        ref={headingRef}
-        tabIndex={-1}
-        className="mt-2.5 font-display text-[44px] font-medium leading-none tracking-[-0.05em] outline-none md:text-[64px] lg:text-[80px]"
-      >
-        {step.title}
-      </h1>
-
-      <div
-        role="group"
-        aria-label={`${category.name} tools`}
-        className="mt-12 grid grid-cols-3 justify-items-center gap-y-8 sm:grid-cols-5 lg:grid-cols-[repeat(auto-fill,120px)] lg:justify-between lg:gap-x-3.5"
-      >
-        {quickPicks.map((tool) => (
-          <ToolOption
-            key={tool.id}
-            tool={toolFromCatalog(tool, category.id)}
-            selected={selectedIds.has(tool.id)}
-            unavailable={full && !selectedIds.has(tool.id)}
-            onClick={() => toggle(tool, "quick_pick")}
-          />
-        ))}
-        {extras.map((item) => (
-          <ToolOption key={item.id} tool={toolFromItem(item)} selected onClick={() => removeItem(item.id)} />
-        ))}
-        <MoreToolsOption expanded={moreOpen} controls={moreId} onClick={() => onMoreOpenChange(!moreOpen)} />
+        </main>
       </div>
 
-      {moreOpen && (
-        <MorePanel
-          id={moreId}
-          onClose={() => onMoreOpenChange(false)}
-          category={category}
-          owned={owned}
-          selectedIds={selectedIds}
-          full={full}
-          onToggle={(tool) => toggle(tool, "more")}
+      {generating && (
+        <GenerateSequence
+          tools={tools}
+          onDone={() => {
+            markResultsReveal();
+            navigate("results");
+          }}
+          onCancel={() => setGenerating(false)}
         />
       )}
-
-      <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <StepModels items={modelItems} focusId={focusId} onFocus={setFocusId} primaryId={stack.primaryId} />
-        </div>
-        {actions}
-      </div>
-    </>
+    </div>
   );
 }
 
-interface MorePanelProps {
-  id: string;
-  onClose: () => void;
-  category: Category;
-  owned: SelectedItem[];
-  selectedIds: Set<string>;
-  full: boolean;
-  onToggle: (tool: CatalogTool) => void;
-}
-
-/** The rest of the category, contextual search and custom entry, opened from the "More tools" coin. */
-function MorePanel({ id, onClose, ...props }: MorePanelProps) {
-  const regionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    regionRef.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
-  }, []);
-
+/** Outlined pill for Back and Skip. Next uses the main black and lime CTA. */
+function GuideNavButton({ children, className = "", ...rest }: ComponentProps<"button">) {
   return (
-    <div
-      id={id}
-      ref={regionRef}
-      role="region"
-      aria-label={`More ${props.category.name} tools`}
-      onKeyDown={(e) => {
-        if (e.key !== "Escape") return;
-        e.stopPropagation();
-        onClose();
-      }}
-      className="mt-10 max-h-[260px] overflow-y-auto rounded-3xl bg-sf-paper p-5"
+    <button
+      type="button"
+      {...rest}
+      className={`inline-flex h-11 items-center justify-center rounded-full border border-[#DAD7CF] bg-white px-5 text-[15px] font-semibold text-sf-ink transition-colors hover:border-[#B7B3A8] hover:bg-[#FAF9F6] ${focusRing} ${className}`}
     >
-      <MoreTools {...props} />
-    </div>
+      {children}
+    </button>
   );
 }
 
-/** "Claude Code with" leads the pill row; single-version tools and custom tools read differently. */
-function modelLead(item: SelectedItem): string {
-  const label = itemLabel(item);
-  const models = item.toolId ? catalog.modelsForTool(item.toolId) : [];
-  if (models.length === 0) return `${label} model`;
-  if (models.length === 1 && models[0].name.toLowerCase() === label.toLowerCase()) return `${label} version`;
-  return `${label} with`;
-}
-
-interface StepModelsProps {
-  items: SelectedItem[];
-  focusId: string | undefined;
-  onFocus: (id: string) => void;
-  primaryId: string | null;
-}
-
-/** Optional model → version choice. It follows the most recently picked tool; chips switch between tools. */
-function StepModels({ items, focusId, onFocus, primaryId }: StepModelsProps) {
-  const [revealed, setRevealed] = useState<string[]>([]);
-
-  if (items.length === 0) return null;
-
-  const focused = items.find((i) => i.id === focusId) ?? items[items.length - 1];
-  const label = itemLabel(focused);
-  // Custom tools have no catalog models; their free-text field waits for a click so it can't steal focus.
-  const collapsed = !focused.toolId && focused.customModel === undefined && !revealed.includes(focused.id);
-
-  return (
-    <div>
-      {items.length > 1 && (
-        <div role="group" aria-label="Choose which tool to set a model for" className="mb-3 flex flex-wrap gap-2.5 p-0.5">
-          {items.map((i) => {
-            const pressed = i.id === focused.id;
-            const model = itemModelLabel(i);
-            return (
-              <button
-                key={i.id}
-                type="button"
-                aria-pressed={pressed}
-                onClick={() => onFocus(i.id)}
-                className={[
-                  "inline-flex h-10 max-w-full items-center gap-2 rounded-full bg-white pl-1 pr-4 text-[15px] transition-shadow",
-                  pressed
-                    ? "font-semibold text-sf-ink shadow-[0_0_0_2px_#3A2EFF]"
-                    : "font-medium text-sf-muted shadow-[0_0_0_1px_#ECEAE4] hover:text-sf-ink",
-                  focusRing,
-                ].join(" ")}
-              >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_0_0_1px_#ECEAE4]">
-                  <ToolLogo tool={toolFromItem(i)} size="16px" monogramSize="14px" />
-                </span>
-                <span className="truncate">{itemLabel(i)}</span>
-                {model && <span className="truncate font-normal text-sf-muted">· {model}</span>}
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {collapsed ? (
-        <button
-          type="button"
-          onClick={() => setRevealed((r) => [...r, focused.id])}
-          className={`inline-flex h-11 items-center rounded-full border-[1.5px] border-dashed border-[#CFCBC1] px-5 text-base font-medium text-sf-muted hover:text-sf-ink ${focusRing}`}
-        >
-          + Add a {label} model (optional)
-        </button>
-      ) : (
-        <InlineModelPicker key={focused.id} item={focused} isPrimary={primaryId === focused.id} large heading={modelLead(focused)} />
-      )}
-    </div>
-  );
+function toolMatchesQuery(tool: CatalogTool, q: string): boolean {
+  if (normalize(tool.name).includes(q)) return true;
+  if (tool.aliases?.some((a) => normalize(a).includes(q))) return true;
+  if (normalize(tool.descriptor).includes(q)) return true;
+  if (tool.parentPlatform && normalize(tool.parentPlatform).includes(q)) return true;
+  return false;
 }

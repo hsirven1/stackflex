@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Download } from "lucide-react";
+import { useState } from "react";
 import { ScaledStage } from "@/components/renderer/ScaledStage";
-import { BadgeStripArt } from "@/components/stackflex/BadgeStripArt";
+import { Segmented, ThemeSwitch, type ArtTheme } from "@/components/stackflex/Controls";
 import { BannerArt } from "@/components/stackflex/ShareArt";
+import { LinkedInProfileMock, XProfileMock } from "@/components/stackflex/SocialMocks";
+import { linkedInOpenUrl, xOpenUrl } from "@/lib/selection/profileUrls";
 import { setAssetTheme } from "@/lib/selection/store";
+import type { AssetId, StackState } from "@/lib/selection/types";
 import type { Tool } from "@/lib/stackflex/tools";
-import { ART_SIZE, type ArtTheme, type AssetExporter } from "./artExport";
-import { DownloadButton, ExportError, Panel, ThemeToggle } from "./ResultsUI";
+import { ART_SIZE, type AssetExporter } from "./artExport";
+import { FeaturedToolsPicker } from "./FeaturedToolsPicker";
+import { ActionButton, ActionStage, FormatModule, GhostButton, ShareActions, UtilityButton } from "./ResultsUI";
 
 export interface ArtExport {
   attach: (node: HTMLDivElement | null) => void;
@@ -15,102 +20,162 @@ export interface ArtExport {
   theme: ArtTheme;
 }
 
-/** LinkedIn banner or X header: the exact PNG, scaled down, with its theme and download. */
-export function BannerPanel({
+type BannerPlatform = "linkedin" | "x";
+type DownloadStage = "idle" | "preparing" | "started" | "error";
+
+const PLATFORM: Record<BannerPlatform, { asset: AssetId; name: string; mock: "linkedin" | "x" }> = {
+  linkedin: { asset: "banner", name: "LinkedIn", mock: "linkedin" },
+  x: { asset: "xheader", name: "X", mock: "x" },
+};
+
+const PLATFORM_OPTIONS: { value: BannerPlatform; label: string }[] = [
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "x", label: "X" },
+];
+
+/** Full-size banner artwork at the platform's export size (the PNG capture target). */
+function BannerNode({
   asset,
-  title,
   tools,
-  art: { attach, exporter, theme },
+  attach,
+  theme,
 }: {
   asset: "banner" | "xheader";
-  title: string;
   tools: Tool[];
-  art: ArtExport;
+  attach: ArtExport["attach"];
+  theme: ArtTheme;
 }) {
   const { width, height } = ART_SIZE[asset];
   return (
-    <Panel
-      id={`asset-${asset}`}
-      title={title}
-      meta={`${width} × ${height} · PNG`}
-      actions={
-        <>
-          <ThemeToggle label={`${title} theme`} value={theme} onChange={(t) => setAssetTheme(asset, t)} />
-          <DownloadButton exporter={exporter} ariaLabel={`Download ${title} PNG`} />
-        </>
-      }
-    >
-      <div className="overflow-hidden rounded-[7px] shadow-[0_14px_30px_-20px_rgba(11,11,12,.35)]">
-        <ScaledStage width={width} height={height}>
-          <div ref={attach} style={{ width }}>
-            <BannerArt tools={tools} theme={theme} ratio={`${width} / ${height}`} />
-          </div>
-        </ScaledStage>
-      </div>
-      <ExportError exporter={exporter} />
-    </Panel>
-  );
-}
-
-/** Shows a content-sized node at its natural size, or scaled down to fit when it's wider. */
-function FitStage({ children, dark }: { children: ReactNode; dark: boolean }) {
-  const frameRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const [box, setBox] = useState({ scale: 0, height: 0 });
-
-  useEffect(() => {
-    const frame = frameRef.current;
-    const inner = innerRef.current;
-    if (!frame || !inner) return;
-    const measure = () => {
-      const scale = Math.min(1, frame.clientWidth / Math.max(1, inner.offsetWidth));
-      setBox({ scale, height: inner.offsetHeight * scale });
-    };
-    const observer = new ResizeObserver(measure);
-    observer.observe(frame);
-    observer.observe(inner);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div className={`rounded-2xl px-4 py-5 ${dark ? "bg-sf-ink" : "bg-white"}`}>
-      <div ref={frameRef} className="relative overflow-hidden" style={{ height: box.height }}>
-        <div
-          ref={innerRef}
-          className="absolute left-0 top-0 w-max"
-          style={{ transform: `scale(${box.scale})`, transformOrigin: "0 0", visibility: box.scale ? "visible" : "hidden" }}
-        >
-          {children}
-        </div>
-      </div>
+    <div ref={attach} style={{ width }}>
+      <BannerArt tools={tools} theme={theme} ratio={`${width} / ${height}`} />
     </div>
   );
 }
 
-/** The transparent badge strip: its preview sits on a matching surface so both themes stay legible. */
-export function BadgeStripPreview({ tools, art: { attach, theme } }: { tools: Tool[]; art: ArtExport }) {
-  return (
-    <FitStage dark={theme === "dark"}>
-      <BadgeStripArt ref={attach} tools={tools} theme={theme} />
-    </FitStage>
-  );
+function openProfile(platform: BannerPlatform) {
+  const url = platform === "linkedin" ? linkedInOpenUrl() : xOpenUrl();
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
-export function StripPanel({ tools, art }: { tools: Tool[]; art: ArtExport }) {
+/**
+ * Compact Profile Banner for the narrower (~40%) Results column.
+ * Preview scales with column width; export dimensions stay native.
+ * Two-step download → open-profile; never auto-opens a tab.
+ */
+export function ProfileBannerSection({
+  stack,
+  tools,
+  headline,
+  linkedin,
+  x,
+}: {
+  stack: StackState;
+  tools: Tool[];
+  headline?: string;
+  linkedin: ArtExport;
+  x: ArtExport;
+}) {
+  const [platform, setPlatform] = useState<BannerPlatform>("linkedin");
+  const [stage, setStage] = useState<DownloadStage>("idle");
+  const active = PLATFORM[platform];
+  const art = platform === "linkedin" ? linkedin : x;
+  const asset = active.asset as "banner" | "xheader";
+  const { width, height } = ART_SIZE[asset];
+  const preparing = stage === "preparing";
+
+  function setTheme(theme: ArtTheme) {
+    setAssetTheme("banner", theme);
+    setAssetTheme("xheader", theme);
+    setStage("idle");
+  }
+
+  function switchPlatform(next: BannerPlatform) {
+    setPlatform(next);
+    setStage("idle");
+  }
+
+  async function downloadBanner() {
+    if (preparing) return;
+    setStage("preparing");
+    try {
+      const ok = await art.exporter.download();
+      setStage(ok ? "started" : "error");
+    } catch {
+      setStage("error");
+    }
+  }
+
+  const downloadLabel = platform === "linkedin" ? "Download banner" : "Download X banner";
+  const openLabel = platform === "linkedin" ? "Open LinkedIn" : "Open X";
+
   return (
-    <Panel
-      id="asset-strip"
-      title="Website badges"
-      meta="Transparent PNG"
-      actions={
+    <FormatModule
+      id="format-profile-banner"
+      title="Profile Banner"
+      layout="below"
+      compact
+      controls={
         <>
-          <ThemeToggle label="Website badges theme" value={art.theme} onChange={(t) => setAssetTheme("strip", t)} />
-          <DownloadButton exporter={art.exporter} ariaLabel="Download website badges PNG" />
+          <Segmented label="Banner platform" value={platform} options={PLATFORM_OPTIONS} onChange={switchPlatform} />
+          <ThemeSwitch label="Profile banner theme" value={art.theme} onChange={setTheme} />
         </>
       }
-    >
-      <BadgeStripPreview tools={tools} art={art} />
-      <ExportError exporter={art.exporter} />
-    </Panel>
+      preview={
+        <div aria-hidden="true" className="mx-auto w-full max-w-full">
+          {active.mock === "linkedin" ? (
+            <LinkedInProfileMock compact name="Your name" headline={headline}>
+              <ScaledStage width={width} height={height}>
+                <BannerNode asset="banner" tools={tools} attach={linkedin.attach} theme={linkedin.theme} />
+              </ScaledStage>
+            </LinkedInProfileMock>
+          ) : (
+            <XProfileMock name="Your name" handle="@yourhandle">
+              <ScaledStage width={width} height={height}>
+                <BannerNode asset="xheader" tools={tools} attach={x.attach} theme={x.theme} />
+              </ScaledStage>
+            </XProfileMock>
+          )}
+        </div>
+      }
+      actions={
+        <ActionStage>
+          <FeaturedToolsPicker stack={stack} />
+          {stage === "idle" && (
+            <ShareActions inline>
+              <UtilityButton
+                icon={<Download aria-hidden="true" className="size-3.5 opacity-90" strokeWidth={2.2} />}
+                onClick={() => void downloadBanner()}
+              >
+                {downloadLabel}
+              </UtilityButton>
+            </ShareActions>
+          )}
+          {stage === "preparing" && (
+            <ShareActions inline status="Preparing your banner…">
+              <UtilityButton disabled>Preparing…</UtilityButton>
+            </ShareActions>
+          )}
+          {stage === "started" && (
+            <ShareActions inline status="Download started">
+              <ActionButton onClick={() => openProfile(platform)}>
+                {openLabel} ↗
+              </ActionButton>
+              <GhostButton onClick={() => void downloadBanner()}>Download again</GhostButton>
+            </ShareActions>
+          )}
+          {stage === "error" && (
+            <ShareActions inline status="Couldn’t create the image. Try again.">
+              <UtilityButton
+                icon={<Download aria-hidden="true" className="size-3.5 opacity-90" strokeWidth={2.2} />}
+                onClick={() => void downloadBanner()}
+              >
+                Try again
+              </UtilityButton>
+            </ShareActions>
+          )}
+        </ActionStage>
+      }
+    />
   );
 }

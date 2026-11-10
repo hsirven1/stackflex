@@ -32,22 +32,14 @@ export function isCustomModelActive(item: SelectedItem) {
   return !item.modelId && item.customModel !== undefined;
 }
 
+/** Legacy: stacks may still hold a typed version from earlier builds. */
 export function isCustomVersionActive(item: SelectedItem, m: CatalogModel) {
   return item.modelId === m.id && item.customVersion !== undefined;
 }
 
-/** "Other" model: a typed model name instead of a catalog family. */
-export function toggleOtherModel(item: SelectedItem) {
-  updateItem(item.id, isCustomModelActive(item) ? CLEAR_MODEL : { ...CLEAR_MODEL, customModel: "" });
-}
-
-/** "Other" version: a typed version for a catalog family. */
-export function toggleOtherVersion(item: SelectedItem, m: CatalogModel, single: boolean) {
-  if (isCustomVersionActive(item, m)) {
-    updateItem(item.id, single ? CLEAR_MODEL : { customVersion: undefined });
-  } else {
-    updateItem(item.id, { ...CLEAR_MODEL, modelId: m.id, customVersion: "", showVersion: true });
-  }
+/** Clear any model/version choice (optional picker "No specific model"). */
+export function clearModel(item: SelectedItem) {
+  updateItem(item.id, CLEAR_MODEL);
 }
 
 /** "lg" gives model and version choices comfortable touch targets where space allows. */
@@ -61,7 +53,7 @@ export function ChoicePill({
 }: {
   pressed: boolean;
   onClick: () => void;
-  /** "Other" choices: text-only until picked (large size). */
+  /** Quieter style for optional actions such as "No specific model". */
   ghost?: boolean;
   children: ReactNode;
 }) {
@@ -144,8 +136,8 @@ interface InlineModelPickerProps {
 }
 
 /**
- * Optional model choice for one selected tool: family pills → version pills, with "Other" as a
- * typed fallback. Nothing here is required.
+ * Optional model choice for one selected tool: curated family pills → version pills.
+ * Free-text "Other" entry is not offered; legacy customVersion values still render on cards.
  */
 export function InlineModelPicker({ item, isPrimary, onHide, bare = false, heading, large = false }: InlineModelPickerProps) {
   const [showAll, setShowAll] = useState(bare || large);
@@ -154,8 +146,7 @@ export function InlineModelPicker({ item, isPrimary, onHide, bare = false, headi
   const label = itemLabel(item);
   const model = item.modelId ? catalog.model(item.modelId) : undefined;
   const single = models.length === 1 ? models[0] : undefined;
-  const customModelActive = isCustomModelActive(item);
-  const customVersionActive = Boolean(model) && item.customVersion !== undefined;
+  const hasChoice = Boolean(item.modelId || item.customModel || item.customVersion);
   const fieldLabel = modelFieldLabel(item).toLowerCase();
 
   const visibleFamilies =
@@ -171,20 +162,14 @@ export function InlineModelPicker({ item, isPrimary, onHide, bare = false, headi
           {v.label}
         </ChoicePill>
       ))}
-      <ChoicePill pressed={customVersionActive && item.modelId === m.id} onClick={() => toggleOtherVersion(item, m, Boolean(single))} ghost>
-        Other version
-      </ChoicePill>
-      {customVersionActive && item.modelId === m.id && (
-        <InlineInput
-          label={`${m.name} version`}
-          value={item.customVersion ?? ""}
-          maxLength={16}
-          placeholder={m.versions[0] ? `e.g. ${m.versions[0].label}` : "e.g. 2"}
-          onChange={(value) => updateItem(item.id, { customVersion: value })}
-        />
-      )}
     </>
   );
+
+  const nonePill = hasChoice ? (
+    <ChoicePill pressed={false} onClick={() => clearModel(item)} ghost>
+      No specific model
+    </ChoicePill>
+  ) : null;
 
   const gap = large ? "gap-2.5" : "gap-1.5";
   /** Large size: the question leads the pill row instead of sitting above it. */
@@ -242,19 +227,14 @@ export function InlineModelPicker({ item, isPrimary, onHide, bare = false, headi
 
       {models.length === 0 ? (
         <div className={`flex flex-wrap items-center ${gap}`}>
-        {lead}
-        <InlineInput
-          label={`${label} model`}
-          value={item.customModel ?? ""}
-          maxLength={32}
-          placeholder="Model name, e.g. Mixtral 8x22B"
-          onChange={(value) => updateItem(item.id, { customModel: value })}
-        />
+          {lead}
+          {nonePill}
         </div>
       ) : single ? (
         <div role="group" aria-label={`${label} ${single.name} version`} className={`flex flex-wrap items-center ${gap}`}>
           {lead}
           {versionRow(single)}
+          {nonePill}
         </div>
       ) : (
         <>
@@ -274,18 +254,7 @@ export function InlineModelPicker({ item, isPrimary, onHide, bare = false, headi
                 +{hiddenCount} more
               </button>
             )}
-            <ChoicePill pressed={customModelActive} onClick={() => toggleOtherModel(item)} ghost>
-              Other
-            </ChoicePill>
-            {customModelActive && (
-              <InlineInput
-                label={`${label} model name`}
-                value={item.customModel ?? ""}
-                maxLength={32}
-                placeholder="Model name"
-                onChange={(value) => updateItem(item.id, { customModel: value })}
-              />
-            )}
+            {nonePill}
           </div>
           {model && model.versions.length > 0 && (
             <div

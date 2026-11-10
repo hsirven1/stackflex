@@ -2,10 +2,14 @@ import type { CatalogAdapter } from "./adapter";
 import type { CatalogModel, SearchResult } from "./types";
 
 /**
- * Groundwork for live model search via OpenRouter's public model list
- * (GET https://openrouter.ai/api/v1/models). Not wired into the UI in V0.1: no network
- * calls are made. To enable, wrap the local catalog with `withOpenRouterSearch` and have the
- * search UI merge `searchRemote` results behind a debounce.
+ * Hybrid catalog: StackFlex owns the curated tool list and the consumer-facing model families in
+ * `data/models.ts`. OpenRouter (GET https://openrouter.ai/api/v1/models) and similar provider APIs
+ * list API-accessible models; they do not equal ChatGPT / Claude / Gemini app offerings.
+ *
+ * This module maps OpenRouter ids onto curated families via `openRouterIds`. Live search is opt-in:
+ * wrap the local catalog with `withOpenRouterSearch` and merge `searchRemote` behind a debounce.
+ * The questionnaire never calls the network on every render; if a remote fetch fails, the curated
+ * list remains the last-known-good source of truth.
  */
 
 export interface OpenRouterModel {
@@ -24,6 +28,8 @@ const OPENROUTER_PROVIDER_MAP: Record<string, string> = {
   deepseek: "deepseek",
   qwen: "alibaba",
   moonshotai: "moonshot",
+  "z-ai": "zhipu",
+  zhipuai: "zhipu",
   perplexity: "perplexity",
 };
 

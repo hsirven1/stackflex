@@ -7,18 +7,71 @@ export function itemLabel(item: SelectedItem): string {
   return tool?.name ?? item.customName ?? "Untitled";
 }
 
+/** Stable key for a model (+ version) choice. */
+export function modelRefKey(ref: { modelId: string; versionId?: string }): string {
+  return ref.versionId ? `${ref.modelId}:${ref.versionId}` : ref.modelId;
+}
+
+/**
+ * Normalized multi-model list for a selection.
+ * Migrates legacy single `modelId` / `customModel` when `models` is absent.
+ */
+export function itemModels(item: SelectedItem): Array<{
+  modelId?: string;
+  versionId?: string;
+  customVersion?: string;
+  customModel?: string;
+  key: string;
+}> {
+  if (item.models && item.models.length > 0) {
+    return item.models.map((m) => ({
+      modelId: m.modelId,
+      versionId: m.versionId,
+      customVersion: m.customVersion,
+      key: modelRefKey(m),
+    }));
+  }
+  if (item.modelId) {
+    return [
+      {
+        modelId: item.modelId,
+        versionId: item.versionId,
+        customVersion: item.customVersion,
+        key: modelRefKey({ modelId: item.modelId, versionId: item.versionId }),
+      },
+    ];
+  }
+  const custom = item.customModel?.trim();
+  if (custom) return [{ customModel: custom, key: `custom:${custom}` }];
+  return [];
+}
+
+/** All model labels for a tool, joined for profile lists (e.g. "Opus 4.6, Sonnet 4.5"). */
+export function itemModelLabels(
+  item: SelectedItem,
+  options: { full?: boolean; separator?: string } = {},
+): string | undefined {
+  const tool = item.toolId ? catalog.tool(item.toolId) : undefined;
+  const sep = options.separator ?? ", ";
+  const labels = itemModels(item)
+    .map((m) => {
+      if (m.modelId) {
+        return catalog.formatModel(
+          m.modelId,
+          item.showVersion ? m.versionId : undefined,
+          options.full ? undefined : tool?.providerId,
+          item.showVersion ? m.customVersion : undefined,
+        );
+      }
+      return m.customModel?.trim() || undefined;
+    })
+    .filter((l): l is string => Boolean(l));
+  return labels.length ? labels.join(sep) : undefined;
+}
+
 /** Model label as shown on the badge, honoring the "show version" preference. */
 export function itemModelLabel(item: SelectedItem, options: { full?: boolean } = {}): string | undefined {
-  const tool = item.toolId ? catalog.tool(item.toolId) : undefined;
-  if (item.modelId) {
-    return catalog.formatModel(
-      item.modelId,
-      item.showVersion ? item.versionId : undefined,
-      options.full ? undefined : tool?.providerId,
-      item.showVersion ? item.customVersion : undefined,
-    );
-  }
-  return item.customModel?.trim() || undefined;
+  return itemModelLabels(item, { ...options, separator: ", " });
 }
 
 /** Provider attribution shown when no model is chosen. */

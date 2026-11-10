@@ -1,0 +1,607 @@
+{
+  "schemaVersion": 1,
+  "description": "Curated optional activity suggestions for StackFlex. Suggested does not mean verified or actually performed.",
+  "usage": "Match keys to canonical IDs in current local catalog; deduplicate labels across selected tools; never auto-publish or auto-select.",
+  "suggestionsByToolId": {
+    "chatgpt": [
+      "Brainstorm ideas",
+      "Draft documents and emails",
+      "Summarize information",
+      "Analyze data",
+      "Plan projects",
+      "Prepare presentations"
+    ],
+    "claude": [
+      "Brainstorm ideas",
+      "Analyze long documents",
+      "Refine professional writing",
+      "Plan complex projects",
+      "Review research findings",
+      "Draft structured reports"
+    ],
+    "gemini": [
+      "Research topics",
+      "Summarize documents",
+      "Brainstorm ideas",
+      "Analyze information",
+      "Draft written content"
+    ],
+    "perplexity": [
+      "Research with sources",
+      "Compare products and options",
+      "Explore industry trends",
+      "Validate information",
+      "Summarize current topics"
+    ],
+    "copilot": [
+      "Draft professional content",
+      "Summarize information",
+      "Research topics",
+      "Brainstorm ideas",
+      "Plan tasks"
+    ],
+    "grok": [
+      "Brainstorm ideas",
+      "Explore current discussions",
+      "Summarize information",
+      "Draft content"
+    ],
+    "meta-ai": [
+      "Brainstorm ideas",
+      "Answer everyday questions",
+      "Draft messages",
+      "Explore creative ideas"
+    ],
+    "deepseek-chat": [
+      "Reason through problems",
+      "Explain technical concepts",
+      "Draft code snippets",
+      "Summarize documents",
+      "Brainstorm ideas"
+    ],
+    "le-chat": [
+      "Brainstorm ideas",
+      "Draft professional content",
+      "Summarize documents",
+      "Analyze information",
+      "Translate or refine text"
+    ],
+    "kimi": [
+      "Analyze long documents",
+      "Research complex topics",
+      "Brainstorm ideas",
+      "Draft structured content",
+      "Reason through problems"
+    ],
+    "qwen-chat": [
+      "Brainstorm ideas",
+      "Explain technical concepts",
+      "Draft content",
+      "Translate or refine text",
+      "Reason through problems"
+    ],
+    "poe": [
+      "Compare AI model outputs",
+      "Experiment with different assistants",
+      "Draft written content",
+      "Brainstorm ideas",
+      "Research topics"
+    ],
+    "cursor": [
+      "Build full-stack apps",
+      "Vibe-code personal projects",
+      "Implement product features",
+      "Debug and refactor code",
+      "Write automated tests",
+      "Prototype software ideas"
+    ],
+    "claude-code": [
+      "Build full-stack apps",
+      "Vibe-code personal projects",
+      "Implement production features",
+      "Debug and refactor code",
+      "Write automated tests",
+      "Automate developer tasks"
+    ],
+    "github-copilot": [
+      "Complete and explain code",
+      "Write unit tests",
+      "Refactor existing code",
+      "Implement new features",
+      "Review code changes"
+    ],
+    "codex": [
+      "Implement product features",
+      "Debug coding issues",
+      "Write automated tests",
+      "Refactor codebases",
+      "Review pull requests"
+    ],
+    "lovable": [
+      "Vibe-code personal projects",
+      "Prototype web applications",
+      "Build app MVPs",
+      "Create landing pages",
+      "Iterate on UI designs"
+    ],
+    "windsurf": [
+      "Build full-stack apps",
+      "Implement product features",
+      "Debug and refactor code",
+      "Prototype software ideas",
+      "Write automated tests"
+    ],
+    "replit": [
+      "Prototype web applications",
+      "Build app MVPs",
+      "Experiment with code",
+      "Deploy personal projects",
+      "Create internal tools"
+    ],
+    "v0": [
+      "Generate UI components",
+      "Prototype product interfaces",
+      "Build landing pages",
+      "Explore design directions",
+      "Iterate on front-end layouts"
+    ],
+    "bolt": [
+      "Prototype web applications",
+      "Vibe-code personal projects",
+      "Build app MVPs",
+      "Create interactive demos",
+      "Experiment with product ideas"
+    ],
+    "gemini-cli": [
+      "Work with codebases",
+      "Automate developer tasks",
+      "Debug coding issues",
+      "Build command-line utilities",
+      "Review code changes"
+    ],
+    "zed": [
+      "Develop with AI assistance",
+      "Debug and refactor code",
+      "Explore unfamiliar code",
+      "Implement product features"
+    ],
+    "cline": [
+      "Build agent-assisted software",
+      "Implement product features",
+      "Debug codebases",
+      "Automate developer tasks",
+      "Prototype integrations"
+    ],
+    "opencode": [
+      "Develop with coding agents",
+      "Implement product features",
+      "Debug codebases",
+      "Refactor existing code",
+      "Automate developer tasks"
+    ],
+    "jetbrains-ai": [
+      "Explain unfamiliar code",
+      "Implement product features",
+      "Refactor existing code",
+      "Write automated tests",
+      "Navigate large codebases"
+    ],
+    "warp": [
+      "Automate terminal workflows",
+      "Troubleshoot development environments",
+      "Run developer tasks",
+      "Explore command-line tools",
+      "Create terminal scripts"
+    ],
+    "midjourney": [
+      "Create concept art",
+      "Design campaign visuals",
+      "Explore visual styles",
+      "Build moodboards",
+      "Generate product imagery concepts"
+    ],
+    "runway": [
+      "Generate video concepts",
+      "Create short video clips",
+      "Prototype visual storytelling",
+      "Experiment with AI video",
+      "Develop campaign visuals"
+    ],
+    "elevenlabs": [
+      "Create AI voiceovers",
+      "Narrate video content",
+      "Produce spoken audio",
+      "Localize audio content",
+      "Prototype voice experiences"
+    ],
+    "suno": [
+      "Generate original music ideas",
+      "Create draft soundtracks",
+      "Explore musical styles",
+      "Prototype audio concepts"
+    ],
+    "firefly": [
+      "Generate design assets",
+      "Explore visual concepts",
+      "Edit marketing imagery",
+      "Create campaign visuals",
+      "Prototype creative directions"
+    ],
+    "sora": [
+      "Generate video concepts",
+      "Prototype short scenes",
+      "Explore cinematic ideas",
+      "Create visual storytelling experiments"
+    ],
+    "veo": [
+      "Generate video concepts",
+      "Prototype short scenes",
+      "Create marketing video experiments",
+      "Explore cinematic ideas"
+    ],
+    "krea": [
+      "Explore visual styles",
+      "Generate image concepts",
+      "Create campaign visuals",
+      "Experiment with AI visuals"
+    ],
+    "ideogram": [
+      "Generate graphics with text",
+      "Create poster concepts",
+      "Explore logo directions",
+      "Design campaign visuals",
+      "Prototype brand concepts"
+    ],
+    "stable-diffusion": [
+      "Generate image concepts",
+      "Experiment with image models",
+      "Create visual assets",
+      "Explore prompt-based image styles"
+    ],
+    "kling": [
+      "Generate video concepts",
+      "Animate visual ideas",
+      "Create short video clips",
+      "Prototype storytelling concepts"
+    ],
+    "heygen": [
+      "Create avatar-led videos",
+      "Localize video messages",
+      "Produce explainer videos",
+      "Prototype presenter videos"
+    ],
+    "canva-ai": [
+      "Design social graphics",
+      "Create presentations",
+      "Draft campaign visuals",
+      "Adapt content for channels",
+      "Generate design variations"
+    ],
+    "figma-make": [
+      "Prototype interactive interfaces",
+      "Explore product concepts",
+      "Generate UI experiments",
+      "Communicate design ideas"
+    ],
+    "n8n": [
+      "Connect apps and data",
+      "Automate repetitive tasks",
+      "Build AI-assisted workflows",
+      "Route information between tools",
+      "Create approval workflows"
+    ],
+    "zapier": [
+      "Connect business apps",
+      "Automate repetitive tasks",
+      "Route leads and notifications",
+      "Build AI-assisted workflows",
+      "Reduce manual data entry"
+    ],
+    "make": [
+      "Connect business apps",
+      "Automate repetitive tasks",
+      "Build AI-assisted workflows",
+      "Synchronize information",
+      "Create approval workflows"
+    ],
+    "langchain": [
+      "Build LLM-powered applications",
+      "Connect AI to external tools",
+      "Prototype retrieval workflows",
+      "Create AI agents",
+      "Evaluate AI application behavior"
+    ],
+    "crewai": [
+      "Prototype multi-agent workflows",
+      "Coordinate AI agents",
+      "Automate research processes",
+      "Build AI task pipelines"
+    ],
+    "dify": [
+      "Build AI assistants",
+      "Prototype AI workflows",
+      "Connect AI to knowledge sources",
+      "Test AI app ideas",
+      "Create internal AI tools"
+    ],
+    "langflow": [
+      "Prototype AI workflows",
+      "Connect AI components visually",
+      "Build retrieval pipelines",
+      "Experiment with AI agents"
+    ],
+    "mcp": [
+      "Connect AI to external tools",
+      "Prototype tool integrations",
+      "Expose data to AI assistants",
+      "Design reusable AI tool interfaces"
+    ],
+    "openai-agents": [
+      "Build tool-using AI agents",
+      "Prototype multi-step AI tasks",
+      "Evaluate agent behavior",
+      "Connect AI to business tools"
+    ],
+    "ifttt": [
+      "Connect everyday apps",
+      "Automate routine actions",
+      "Trigger cross-app notifications",
+      "Simplify repetitive tasks"
+    ],
+    "notebooklm": [
+      "Summarize source documents",
+      "Explore research materials",
+      "Prepare study notes",
+      "Find insights across sources",
+      "Create audio overviews"
+    ],
+    "notion-ai": [
+      "Summarize team knowledge",
+      "Draft project documentation",
+      "Find information in notes",
+      "Organize meeting takeaways",
+      "Brainstorm project ideas"
+    ],
+    "granola": [
+      "Capture meeting notes",
+      "Summarize discussions",
+      "Extract action items",
+      "Prepare meeting follow-ups"
+    ],
+    "deepl": [
+      "Translate professional content",
+      "Localize business messages",
+      "Refine multilingual writing",
+      "Review translated documents"
+    ],
+    "elicit": [
+      "Search research literature",
+      "Summarize academic papers",
+      "Compare study findings",
+      "Gather supporting evidence"
+    ],
+    "gamma": [
+      "Create AI-assisted presentations",
+      "Turn outlines into slides",
+      "Visualize business ideas",
+      "Prepare pitch decks",
+      "Build presentation drafts"
+    ],
+    "grammarly": [
+      "Refine professional writing",
+      "Improve tone and clarity",
+      "Proofread documents",
+      "Draft workplace messages"
+    ],
+    "raycast-ai": [
+      "Run AI from desktop",
+      "Summarize selected text",
+      "Automate personal shortcuts",
+      "Draft quick responses",
+      "Experiment with AI models"
+    ],
+    "kagi": [
+      "Research with sources",
+      "Find reliable information",
+      "Compare research findings",
+      "Summarize web results"
+    ],
+    "otter": [
+      "Transcribe meetings",
+      "Summarize discussions",
+      "Extract action items",
+      "Review meeting highlights"
+    ],
+    "ollama": [
+      "Run models locally",
+      "Experiment with open models",
+      "Prototype private AI workflows",
+      "Compare local model outputs"
+    ],
+    "lm-studio": [
+      "Run models locally",
+      "Compare open models",
+      "Experiment with private AI",
+      "Prototype local inference"
+    ],
+    "hugging-face": [
+      "Explore open AI models",
+      "Test model demos",
+      "Share model experiments",
+      "Discover AI datasets",
+      "Prototype ML applications"
+    ],
+    "openrouter": [
+      "Compare AI models",
+      "Route requests across providers",
+      "Prototype multi-model apps",
+      "Monitor model usage"
+    ],
+    "vllm": [
+      "Serve open-weight models",
+      "Optimize inference throughput",
+      "Prototype model deployments",
+      "Test model serving"
+    ],
+    "llama-cpp": [
+      "Run models locally",
+      "Optimize local inference",
+      "Experiment with quantized models",
+      "Prototype offline AI"
+    ],
+    "open-webui": [
+      "Use self-hosted AI chat",
+      "Connect to local models",
+      "Prototype private assistants",
+      "Organize AI conversations"
+    ],
+    "groq": [
+      "Prototype fast AI inference",
+      "Test model latency",
+      "Build inference-backed demos",
+      "Experiment with open models"
+    ],
+    "together": [
+      "Prototype AI applications",
+      "Run hosted open models",
+      "Compare inference options",
+      "Experiment with model APIs"
+    ],
+    "replicate": [
+      "Run hosted AI models",
+      "Prototype model-powered features",
+      "Experiment with image models",
+      "Test AI APIs"
+    ],
+    "modal": [
+      "Deploy AI inference jobs",
+      "Prototype GPU workloads",
+      "Run model experiments",
+      "Build AI backends"
+    ],
+    "nvidia-nim": [
+      "Deploy inference services",
+      "Prototype enterprise AI workloads",
+      "Serve model APIs",
+      "Evaluate AI deployment options"
+    ],
+    "workers-ai": [
+      "Build edge AI features",
+      "Deploy inference endpoints",
+      "Prototype AI-powered services",
+      "Experiment with AI at the edge"
+    ],
+    "bedrock": [
+      "Build AI applications on AWS",
+      "Test managed foundation models",
+      "Prototype enterprise assistants",
+      "Connect models to cloud workflows"
+    ],
+    "hubspot-breeze": [
+      "Draft marketing content",
+      "Research CRM contacts",
+      "Summarize customer insights",
+      "Support sales prospecting",
+      "Create AI-assisted campaigns"
+    ],
+    "shopify-sidekick": [
+      "Analyze store performance",
+      "Draft product descriptions",
+      "Explore merchandising ideas",
+      "Automate store tasks",
+      "Review commerce trends"
+    ],
+    "atlassian-rovo": [
+      "Search company knowledge",
+      "Summarize Jira updates",
+      "Draft project documentation",
+      "Build task-focused AI agents",
+      "Find information across projects"
+    ],
+    "microsoft-365-copilot": [
+      "Draft business documents",
+      "Summarize meetings",
+      "Analyze spreadsheet data",
+      "Create presentation drafts",
+      "Find information across work"
+    ],
+    "salesforce-agentforce": [
+      "Create AI service agents",
+      "Assist customer support processes",
+      "Automate CRM workflows",
+      "Prototype sales assistants"
+    ],
+    "klaviyo-ai": [
+      "Personalize marketing messages",
+      "Segment customers",
+      "Explore predictive insights",
+      "Optimize retention campaigns"
+    ],
+    "asana-ai": [
+      "Summarize project status",
+      "Identify potential blockers",
+      "Build workflow automations",
+      "Coordinate team updates"
+    ],
+    "productboard-ai": [
+      "Summarize customer feedback",
+      "Identify recurring product themes",
+      "Organize feature insights",
+      "Support prioritization discussions"
+    ],
+    "intercom-fin": [
+      "Answer routine support questions",
+      "Support customer self-service",
+      "Triage support requests",
+      "Review support knowledge"
+    ],
+    "gorgias-ai": [
+      "Draft customer support replies",
+      "Handle routine service questions",
+      "Automate support tasks",
+      "Summarize customer conversations"
+    ],
+    "gong-ai": [
+      "Summarize sales calls",
+      "Review deal conversations",
+      "Identify coaching opportunities",
+      "Analyze customer objections"
+    ],
+    "canva-magic-studio": [
+      "Create marketing graphics",
+      "Draft presentations",
+      "Generate design variations",
+      "Adapt visuals for channels"
+    ],
+    "jira-rovo": [
+      "Search project knowledge",
+      "Summarize Jira updates",
+      "Draft project documentation",
+      "Create project follow-ups"
+    ],
+    "figma-ai": [
+      "Prototype product interfaces",
+      "Generate design ideas",
+      "Explore UI variations",
+      "Accelerate design iteration"
+    ],
+    "adobe-acrobat-ai": [
+      "Summarize PDF documents",
+      "Find information in PDFs",
+      "Compare document details",
+      "Draft document takeaways"
+    ],
+    "google-workspace-gemini": [
+      "Draft workplace emails",
+      "Summarize documents",
+      "Organize meeting notes",
+      "Analyze spreadsheet information"
+    ],
+    "notion-ai-business": [
+      "Summarize team knowledge",
+      "Find information in workspace",
+      "Draft project updates",
+      "Extract tasks from notes"
+    ]
+  }
+}

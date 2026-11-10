@@ -1,0 +1,37 @@
+{
+  "format": "stackflex-ai-activity-v1",
+  "provider": "claude",
+  "generatedAt": "2026-04-02T09:30:00Z",
+  "scope": {
+    "limitations": "Drawn from this Claude conversation and projects referenced here. Does not include other assistants’ chats."
+  },
+  "projects": [
+    {
+      "title": "Brand moodboard and campaign copy variants",
+      "description": "Explored visual directions with Midjourney prompts refined in Claude, then drafted three tone-of-voice options for a fictional wellness brand landing page.",
+      "type": "creative",
+      "status": "completed",
+      "tools": ["Claude", "Midjourney"],
+      "capabilities": ["UI Design", "Content Creation"],
+      "evidence": "self_reported"
+    },
+    {
+      "title": "Ops digest automation sketch",
+      "description": "Outlined an n8n flow that gathers status updates into a weekly digest draft for a fictional team, including node responsibilities and failure cases.",
+      "type": "automation",
+      "status": "in_progress",
+      "tools": ["Claude", "n8n"],
+      "capabilities": ["AI Automation", "Prototyping"],
+      "evidence": "observed"
+    },
+    {
+      "title": "Interview synthesis for user research",
+      "description": "Clustered themes from fictional interview notes into a short research readout with quotes to validate and open questions.",
+      "type": "analysis",
+      "status": "completed",
+      "tools": ["Claude"],
+      "capabilities": ["Research", "Data Analysis"],
+      "evidence": "self_reported"
+    }
+  ]
+}

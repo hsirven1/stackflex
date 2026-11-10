@@ -1,0 +1,63 @@
+/* StackFlex Results / Reveal. Import once (e.g. in app/globals.css) after your existing StackFlex styles.
+   Fonts: expects --font-display (Funnel Display) and --font-sans (Funnel Sans), already provided by
+   lib/stackflex/fonts.ts in the existing app. Components fall back to the family names. */
+
+/* Page background grid (approved 1e): 48px, #F1EFEA, faded toward the edges */
+.sfr-grid {
+  background-image: linear-gradient(#F1EFEA 1px, transparent 1px), linear-gradient(90deg, #F1EFEA 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(60% 55% at 50% 45%, #000, transparent);
+  mask-image: radial-gradient(60% 55% at 50% 45%, #000, transparent);
+}
+
+/* Reveal, under 0.8s, plays once on mount */
+.sfr-card-in { animation: sfr-in 320ms cubic-bezier(.2, .8, .2, 1) both; transform-origin: 50% 50%; }
+@keyframes sfr-in {
+  from { opacity: 0; transform: perspective(1200px) rotateY(-18deg) scale(.94) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+.sfr-sheen {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.95) 48%, rgba(190,170,255,.4) 54%, transparent 66%);
+  transform: translateX(-120%);
+  animation: sfr-sheen 300ms 320ms ease-in-out forwards;
+}
+@keyframes sfr-sheen { to { transform: translateX(120%); } }
+.sfr-rise { animation: sfr-rise 200ms 560ms ease-out both; }
+@keyframes sfr-rise { from { opacity: 0; transform: translateY(8px); } }
+
+/* Banner: second asset, enters 450ms after the card. Never blocks interaction. */
+.sfr-banner-in { animation: sfr-banner 360ms 450ms cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes sfr-banner { from { opacity: 0; transform: translateY(12px); } }
+.sfr-sheen-late { animation-delay: 700ms; }
+
+/* Studio stage (direction B): one shared surface for both assets */
+.sfr-stage {
+  background: linear-gradient(180deg, #F8F7FB 0%, #F4F3EF 100%);
+  box-shadow: inset 0 0 0 1px #ECEAE4;
+}
+.sfr-stage-dots {
+  background-image: radial-gradient(rgba(11,11,12,.07) 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  -webkit-mask-image: radial-gradient(50% 70% at 30% 50%, #000, transparent);
+  mask-image: radial-gradient(50% 70% at 30% 50%, #000, transparent);
+}
+.sfr-grid-top {
+  background-image: linear-gradient(#F1EFEA 1px, transparent 1px), linear-gradient(90deg, #F1EFEA 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(60% 45% at 50% 8%, #000, transparent);
+  mask-image: radial-gradient(60% 45% at 50% 8%, #000, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sfr-banner-in { animation: sfr-fade 200ms ease-out both; }
+  .sfr-card-in { animation: sfr-fade 200ms ease-out both; }
+  .sfr-sheen { display: none; }
+  .sfr-rise { animation: none; }
+}
+@keyframes sfr-fade { from { opacity: 0; } }
+
+/* Export safety: anything inside an export frame renders its final static frame */
+[data-sf-export] .sfr-card-in, [data-sf-export] .sfr-rise { animation: none !important; opacity: 1 !important; transform: none !important; }
+[data-sf-export] .sfr-banner-in { animation: none !important; opacity: 1 !important; transform: none !important; }
+[data-sf-export] .sfr-sheen { display: none !important; }

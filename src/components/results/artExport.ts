@@ -1,30 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ART_BACKGROUND } from "@/components/stackflex/ShareArt";
+import type { ArtTheme } from "@/components/stackflex/Controls";
+import { ART_BACKGROUND, ART_SIZE } from "@/components/stackflex/ShareArt";
 import { renderPng, saveDataUrl } from "@/lib/export/download";
 import { EXPORT_PRESETS } from "@/lib/export/presets";
 import { track } from "@/lib/integrations/analytics";
 import type { AssetId, StackState } from "@/lib/selection/types";
 
-export type ArtTheme = "light" | "dark";
+export type { ArtTheme };
+export { ART_SIZE };
 
-/** Fixed export sizes; badge strips are sized by their content. */
-export const ART_SIZE = {
-  square: { width: 1080, height: 1080 },
-  banner: { width: 1584, height: 396 },
-  xheader: { width: 1500, height: 500 },
-} as const;
-
-/**
- * Light or Dark for an asset. The X header defaults to dark as in the approved design; a stored
- * "mono" choice from the previous design falls back to light.
- */
+/** Light or Dark for an asset (light by default for new users). A stored Mono theme falls back to light. */
 export function artTheme(stack: StackState, asset: AssetId): ArtTheme {
-  const chosen = stack.assetThemes?.[asset];
-  if (chosen === "dark" || chosen === "light") return chosen;
-  return asset === "xheader" ? "dark" : "light";
+  const stored = stack.assetThemes?.[asset];
+  return stored === "light" || stored === "dark" ? stored : "light";
 }
+
+/** The social card's file name carries its theme (stackflex-social-light.png); the others are fixed. */
+export const exportFilename = (asset: AssetId, theme: ArtTheme) =>
+  asset === "square" ? `stackflex-social-${theme}.png` : EXPORT_PRESETS[asset].filename;
 
 /** An asset's export pipeline, shared by its preview and every button that renders or downloads it. */
 export interface AssetExporter {
@@ -41,6 +36,7 @@ export function useArtExport(asset: AssetId, theme: ArtTheme, cacheKey: string, 
   const ref = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<AssetExporter["status"]>("idle");
   const preset = EXPORT_PRESETS[asset];
+  const filename = exportFilename(asset, theme);
   const attach = useCallback((node: HTMLDivElement | null) => {
     ref.current = node;
   }, []);
@@ -54,10 +50,11 @@ export function useArtExport(asset: AssetId, theme: ArtTheme, cacheKey: string, 
   async function render() {
     const node = ref.current;
     if (!node) throw new Error("Preview not ready");
-    const size = asset in ART_SIZE ? ART_SIZE[asset as keyof typeof ART_SIZE] : { width: node.offsetWidth, height: node.offsetHeight };
+    const fixed = asset in ART_SIZE ? ART_SIZE[asset as keyof typeof ART_SIZE] : undefined;
     return renderPng(node, {
-      ...size,
-      filename: preset.filename,
+      ...(fixed ?? { width: node.offsetWidth, height: node.offsetHeight }),
+      pixelRatio: fixed ? 1 : 2,
+      filename,
       backgroundColor: preset.transparent ? undefined : ART_BACKGROUND[theme],
     });
   }
@@ -65,7 +62,7 @@ export function useArtExport(asset: AssetId, theme: ArtTheme, cacheKey: string, 
   async function download() {
     setStatus("working");
     try {
-      saveDataUrl(await render(), preset.filename);
+      saveDataUrl(await render(), filename);
       setStatus("done");
       track({ name: "export_downloaded", props: { format: asset, theme, badgeCount } });
       return true;
@@ -75,6 +72,6 @@ export function useArtExport(asset: AssetId, theme: ArtTheme, cacheKey: string, 
     }
   }
 
-  const exporter: AssetExporter = { cacheKey: `${theme}|${cacheKey}`, filename: preset.filename, render, download, status };
+  const exporter: AssetExporter = { cacheKey: `${theme}|${cacheKey}`, filename, render, download, status };
   return { attach, exporter };
 }

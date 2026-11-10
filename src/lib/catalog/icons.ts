@@ -1,5 +1,7 @@
 import {
   siAnthropic,
+  siAsana,
+  siAtlassian,
   siClaude,
   siClaudecode,
   siCline,
@@ -10,14 +12,17 @@ import {
   siDeepseek,
   siDify,
   siElevenlabs,
+  siFathom,
   siFigma,
   siGithub,
   siGithubcopilot,
   siGoogle,
   siGooglegemini,
   siGrammarly,
+  siHubspot,
   siHuggingface,
   siIfttt,
+  siIntercom,
   siJetbrains,
   siKagi,
   siKimi,
@@ -43,16 +48,20 @@ import {
   siRaycast,
   siReplicate,
   siReplit,
+  siShopify,
   siStackblitz,
   siSuno,
   siV0,
+  siVeed,
   siVercel,
   siVllm,
   siWarp,
   siWindsurf,
   siZapier,
+  siZoom,
   siZedindustries,
 } from "simple-icons";
+import { LOGO_ASSETS } from "./logos";
 
 export interface BrandIcon {
   title: string;
@@ -61,11 +70,13 @@ export interface BrandIcon {
 }
 
 /**
- * Simple Icons registry keyed by Simple Icons slug. Brands without an official Simple Icons
- * entry (e.g. OpenAI, Midjourney, Lovable) intentionally fall back to a neutral monogram.
+ * Simple Icons registry keyed by Simple Icons slug. Brands Simple Icons doesn't carry (OpenAI,
+ * Microsoft, xAI, Midjourney…) come from LOGO_ASSETS; brands in neither show a monogram.
  */
 const REGISTRY: Record<string, BrandIcon> = {
   anthropic: siAnthropic,
+  asana: siAsana,
+  atlassian: siAtlassian,
   claude: siClaude,
   claudecode: siClaudecode,
   cline: siCline,
@@ -76,14 +87,17 @@ const REGISTRY: Record<string, BrandIcon> = {
   deepseek: siDeepseek,
   dify: siDify,
   elevenlabs: siElevenlabs,
+  fathom: siFathom,
   figma: siFigma,
   github: siGithub,
   githubcopilot: siGithubcopilot,
   google: siGoogle,
   googlegemini: siGooglegemini,
   grammarly: siGrammarly,
+  hubspot: siHubspot,
   huggingface: siHuggingface,
   ifttt: siIfttt,
+  intercom: siIntercom,
   jetbrains: siJetbrains,
   kagi: siKagi,
   kimi: siKimi,
@@ -109,17 +123,37 @@ const REGISTRY: Record<string, BrandIcon> = {
   raycast: siRaycast,
   replicate: siReplicate,
   replit: siReplit,
+  shopify: siShopify,
   stackblitz: siStackblitz,
   suno: siSuno,
   v0: siV0,
+  veed: siVeed,
   vercel: siVercel,
   vllm: siVllm,
   warp: siWarp,
   windsurf: siWindsurf,
   zapier: siZapier,
   zedindustries: siZedindustries,
+  zoom: siZoom,
 };
 
-export function getBrandIcon(slug: string | undefined): BrandIcon | undefined {
-  return slug ? REGISTRY[slug] : undefined;
+/** A tool's logo: a single-color Simple Icons path, or a complete SVG (multi-color marks) as an image. */
+export type Logo = { kind: "path"; path: string; hex: string } | { kind: "image"; src: string };
+
+const imageSrc = new Map<string, string>();
+
+/** The one logo lookup used by every surface (selectors, cards, chips, exports). */
+export function getLogo(slug: string | undefined): Logo | undefined {
+  if (!slug) return undefined;
+  const asset = LOGO_ASSETS[slug];
+  if (asset) {
+    let src = imageSrc.get(slug);
+    if (!src) {
+      src = `data:image/svg+xml,${encodeURIComponent(asset.svg)}`;
+      imageSrc.set(slug, src);
+    }
+    return { kind: "image", src };
+  }
+  const icon = REGISTRY[slug];
+  return icon && { kind: "path", path: icon.path, hex: icon.hex };
 }

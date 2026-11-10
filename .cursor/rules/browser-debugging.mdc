@@ -1,0 +1,17 @@
+---
+description: Use Cursor's built-in browser for visual debugging and UI checks, never an external Chrome
+alwaysApply: true
+---
+
+# Browser debugging
+
+For screenshots, visual QA and UI debugging, use the Cursor IDE browser (the `cursor-ide-browser` tools:
+`browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_cdp`, …) or the `browser-use` subagent.
+
+Do not launch Chrome, Chromium, the Playwright headless shell or any other external browser process
+(e.g. spawning `chrome-headless-shell` with `--remote-debugging-port`). It is disruptive for the user.
+
+- Dev server: `http://localhost:3000` (already running via `npm run dev`).
+- Viewport tests: use `browser_cdp` with `Emulation.setDeviceMetricsOverride`, and clear it with
+  `Emulation.clearDeviceMetricsOverride` when done.
+- Seed or inspect state (e.g. `localStorage` keys `stackflex:v1`, `stackflex:guide`) with `Runtime.evaluate`.

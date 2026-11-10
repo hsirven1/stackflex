@@ -99,7 +99,7 @@ export function EditLoadoutDrawer({
       >
         <div className="flex h-[72px] shrink-0 items-center gap-2 border-b border-sf-line pl-5 pr-3 sm:pl-6">
           <h2 id={titleId} className="font-display text-[24px] font-medium tracking-[-0.035em]">
-            Edit your stack
+            Edit your tools
           </h2>
           <button
             type="button"

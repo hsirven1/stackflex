@@ -25,23 +25,24 @@ export const EXPORT_PRESETS: Record<ExportFormat, ExportPreset> = {
   },
   square: {
     id: "square",
-    label: "Square card",
+    label: "Social card",
     description: "1080 × 1080 PNG",
-    filename: "stackflex-square-card.png",
+    /** Light theme; the downloaded file is named per theme (see exportFilename). */
+    filename: "stackflex-social-light.png",
     transparent: false,
   },
   strip: {
     id: "strip",
-    label: "Website Badges",
-    description: "Transparent PNG",
+    label: "Website badge",
+    description: "Transparent PNG, 2×",
     filename: "stackflex-website-badges.png",
     transparent: true,
   },
-  /** Same strip as Website Badges; the filename must match README_IMAGE_PATH in the Markdown. */
+  /** README image; the filename must match README_IMAGE_PATH in the Markdown. */
   github: {
     id: "github",
-    label: "GitHub README badges",
-    description: "Transparent PNG",
+    label: "GitHub README",
+    description: "Transparent PNG, 800px wide, 2×",
     filename: "stackflex-badges.png",
     transparent: true,
   },

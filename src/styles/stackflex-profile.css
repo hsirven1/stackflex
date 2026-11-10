@@ -1,0 +1,103 @@
+/* StackFlex profile components: horizontal card, tool tag, sections, activities.
+   Import after stackflex.css and stackflex-card.css. The colors come from --sf-aura (set inline per tool).
+   Requires color-mix() (all evergreen browsers since 2023). */
+
+/* ---------- Horizontal collectible card (StackCardRow) ---------- */
+.sf-row {
+  --sf-aura: #A8A59C;
+  --sf-tint: #A8A59C42;
+  --sf-glow: #A8A59C80;
+  --sf-top: #A8A59C38;
+  --sf-edge: #A8A59C66;
+  --coin: 42px;
+  --name: 15px;
+  --minh: 72px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: var(--minh);
+  box-sizing: border-box;
+  padding: 10px 14px 10px 13px;
+  border-radius: 16px;
+  border: 1px solid #ECEAE4;
+  overflow: hidden;
+  color: #0B0B0C;
+  font-family: var(--font-sans);
+  /* Pearl base + understated tool-tint wash (mirrors square StackCard) */
+  background:
+    linear-gradient(105deg, rgba(255,255,255,0) 28%, var(--sf-tint) 100%),
+    linear-gradient(165deg, #FFFFFF 0%, #F7F5F1 58%, #F0EDE7 100%);
+  transition: transform .15s ease-out, box-shadow .15s ease-out, border-color .15s ease-out;
+}
+/* sizes */
+.sf-row--md { --coin: 42px; --name: 15px; --minh: 72px; }
+.sf-row--preview { --coin: 38px; --name: 14px; --minh: 66px; }
+.sf-row--sm { --coin: 36px; --name: 14px; --minh: 64px; }
+/* responsive: sm below 640px, md from 640px (public page) */
+.sf-row--auto { --coin: 36px; --name: 14px; --minh: 64px; }
+@media (min-width: 640px) { .sf-row--auto { --coin: 42px; --name: 15px; --minh: 72px; } }
+
+/* Secondary: faint diagonal reflective highlight across the full card */
+.sf-row__pearl { position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(118deg, transparent 34%, rgba(180,200,240,.07) 43%, rgba(255,255,255,.42) 47%, rgba(240,205,220,.07) 51%, transparent 60%); }
+
+/* Main: iridescent foil + restrained sheen */
+.sf-row--main {
+  border-color: var(--sf-edge);
+  box-shadow: 0 12px 26px -18px rgba(60,40,140,.42);
+  background:
+    linear-gradient(100deg, var(--sf-top) 0%, rgba(255,255,255,0) 52%),
+    linear-gradient(165deg, #FFFFFF 0%, #F8F6F2 100%);
+}
+.sf-row__foil { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: .52;
+  background: conic-gradient(from 210deg at 32% 48%, rgba(255,150,170,0), rgba(255,200,110,.68), rgba(130,235,185,.58), rgba(110,180,255,.68), rgba(195,150,255,.68), rgba(255,150,170,0)); }
+.sf-row__glow { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(70% 130% at 0% 100%, var(--sf-glow), transparent 72%); }
+.sf-row__streak { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(118deg, transparent 24%, rgba(140,190,255,.26) 36%, rgba(255,255,255,.88) 43%, rgba(255,190,150,.26) 50%, transparent 61%); }
+.sf-row__streak2 { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(118deg, transparent 62%, rgba(255,255,255,.5) 66%, transparent 70%); }
+
+/* states (only when the card is a link/button) */
+.sf-row--interactive { cursor: pointer; }
+.sf-row--interactive:hover { transform: translateY(-2px); border-color: #D6D3CA; box-shadow: 0 10px 22px -16px rgba(11,11,12,.25); }
+.sf-row--main.sf-row--interactive:hover { border-color: color-mix(in srgb, var(--sf-aura) 55%, transparent); }
+.sf-row--interactive:active { transform: translateY(0); }
+.sf-row--interactive:focus-visible { outline: 2px solid #3A2EFF; outline-offset: 2px; }
+
+/* logo coin */
+.sf-row__coin { position: relative; flex: none; width: var(--coin); height: var(--coin); border-radius: 50%; background: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sf-aura) 60%, transparent), 0 4px 10px -6px rgba(11,11,12,.25); }
+.sf-row__logo { width: 52%; height: 52%; object-fit: contain; }
+.sf-row__mono { font: 600 calc(var(--coin) * .42)/1 var(--font-display); }
+.sf-row__badge { position: absolute; right: -3px; top: -3px; width: calc(var(--coin) * .36); height: calc(var(--coin) * .36); border-radius: 50%;
+  background: #3A2EFF; color: #FFFFFF; box-shadow: 0 0 0 2px #FFFFFF; display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--coin) * .22); line-height: 1; }
+
+/* text */
+.sf-row__text { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sf-row__cat { font-size: 9.5px; line-height: 1; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #8C897F; }
+.sf-row__main { color: #3A2EFF; }
+.sf-row__name { font: 600 var(--name)/1.12 var(--font-display); letter-spacing: -0.025em; overflow-wrap: anywhere; } /* wraps, never truncates */
+.sf-row__model { font-size: 12.5px; line-height: 1.2; font-weight: 500; color: #55534D; }
+
+/* ---------- Tool tag (activities) ---------- */
+.sf-tag { --sf-aura: #A8A59C; height: 28px; box-sizing: border-box; padding: 0 10px 0 4px; border-radius: 999px; background: #FFFFFF;
+  box-shadow: inset 0 0 0 1px #E6E3DC; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-size: 12.5px; font-weight: 600; color: #2A2925; }
+.sf-tag__coin { width: 20px; height: 20px; flex: none; border-radius: 50%; background: #FFFFFF; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--sf-aura) 60%, transparent); }
+.sf-tag__coin img { width: 58%; height: 58%; object-fit: contain; }
+.sf-tag__coin span { font: 600 10px/1 var(--font-display); }
+a.sf-tag:hover, button.sf-tag:hover { box-shadow: inset 0 0 0 1px #CFCBC1; color: #0B0B0C; }
+
+/* ---------- Grids ---------- */
+/* Never centered, never stretched: fixed 216px tracks from 640px, 2 fluid columns below. */
+.sf-grid { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: start; }
+@media (min-width: 640px) { .sf-grid { gap: 10px; grid-template-columns: repeat(auto-fill, 216px); } }
+.sf-grid--preview { display: grid; gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sf-grid--showcase { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
