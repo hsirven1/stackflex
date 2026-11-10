@@ -12,8 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Design reference package; the adopted components live in src/components/stackflex.
-    "design_handoff_stackflex/**", "stackflex-design-handoff-v2/**",
+    // Design reference packages; adopted components live in src/components/stackflex.
+    "design-handoff/**",
+    "design_handoff_stackflex/**",
+    "stackflex-design-handoff-v2/**",
   ]),
 ]);
 

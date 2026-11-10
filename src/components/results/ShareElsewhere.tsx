@@ -34,6 +34,27 @@ type ShareTab = "banner" | "post" | "bio";
 type BannerPlatform = "linkedin" | "x";
 type DownloadStage = "idle" | "preparing" | "started" | "error";
 
+/** Full-size banner capture target — keeps attach/theme as plain props for the React Compiler. */
+function BannerCaptureNode({
+  width,
+  height,
+  tools,
+  attach,
+  theme,
+}: {
+  width: number;
+  height: number;
+  tools: Tool[];
+  attach: ArtExport["attach"];
+  theme: ArtTheme;
+}) {
+  return (
+    <div ref={attach} style={{ width }}>
+      <BannerArt tools={tools} theme={theme} ratio={`${width} / ${height}`} />
+    </div>
+  );
+}
+
 const TABS: { id: ShareTab; label: string; sub: string; icon: ReactNode }[] = [
   { id: "banner", label: "Banner", sub: "LinkedIn · X", icon: <BannerMini /> },
   { id: "post", label: "Post", sub: "Square image", icon: <PostMini /> },
@@ -177,23 +198,24 @@ function BannerPanel({
     window.open(platform === "linkedin" ? linkedInOpenUrl() : xOpenUrl(), "_blank", "noopener,noreferrer");
   }
 
+  const linkedinAttach = linkedin.attach;
+  const linkedinTheme = linkedin.theme;
+  const xAttach = x.attach;
+  const xTheme = x.theme;
+
   return (
     <>
       <div aria-hidden="true" className="w-full">
         {platform === "linkedin" ? (
           <LinkedInProfileMock name={name} headline={headline}>
             <ScaledStage width={width} height={height}>
-              <div ref={linkedin.attach} style={{ width }}>
-                <BannerArt tools={tools} theme={linkedin.theme} ratio={`${width} / ${height}`} />
-              </div>
+              <BannerCaptureNode width={width} height={height} tools={tools} attach={linkedinAttach} theme={linkedinTheme} />
             </ScaledStage>
           </LinkedInProfileMock>
         ) : (
           <XProfileMock name={name} handle="@you">
             <ScaledStage width={width} height={height}>
-              <div ref={x.attach} style={{ width }}>
-                <BannerArt tools={tools} theme={x.theme} ratio={`${width} / ${height}`} />
-              </div>
+              <BannerCaptureNode width={width} height={height} tools={tools} attach={xAttach} theme={xTheme} />
             </ScaledStage>
           </XProfileMock>
         )}
