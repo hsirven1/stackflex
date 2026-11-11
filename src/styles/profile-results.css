@@ -34,6 +34,8 @@
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
+  /* Keep descenders inside the painted line box for clipped gradient text. */
+  overflow: visible;
 }
 @keyframes sfr-rise { from { opacity: 0; transform: translateY(8px); } }
 

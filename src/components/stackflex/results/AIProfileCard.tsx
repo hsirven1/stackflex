@@ -96,8 +96,12 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
                     style={{
                       margin: `${u(hero ? 20 : 8)} 0 0`,
                       textAlign: "center",
-                      font: `500 ${u(hero ? 42 : 36)}/1 var(--font-display), 'Funnel Display', sans-serif`,
+                      // Funnel Display descenders (g/y/p/j) exceed the em-box. LH 1 + card
+                      // overflow:hidden + background-clip:text clipped titles like "AI Strategist".
+                      // LH/padding must cover fontBoundingBoxDescent (~0.24em), not just the em box.
+                      font: `500 ${u(hero ? 42 : 36)}/1.3 var(--font-display), 'Funnel Display', sans-serif`,
                       letterSpacing: "-0.045em",
+                      paddingBottom: "0.2em",
                       // Use backgroundImage (not the background shorthand): setting `background`
                       // on theme change resets background-clip to border-box and paints a bar.
                       backgroundImage: titleGradient,
@@ -109,7 +113,7 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
                   >
                     {title}
                   </h2>
-                  <p className={rise} style={{ margin: `${u(hero ? 9 : 5)} auto 0`, maxWidth: u(340), textAlign: "center", fontSize: u(tagSize), lineHeight: 1.35, color: dark ? "#C9C6D6" : "#55534D", textWrap: "balance" as CSSProperties["textWrap"] }}>
+                  <p className={rise} style={{ margin: `${u(hero ? 4 : 0)} auto 0`, maxWidth: u(340), textAlign: "center", fontSize: u(tagSize), lineHeight: 1.35, color: dark ? "#C9C6D6" : "#55534D", textWrap: "balance" as CSSProperties["textWrap"] }}>
                     {tagline}
                   </p>
                 </>
@@ -140,7 +144,7 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
               <div style={{ flex: 1, minHeight: 0, padding: `${u(18)} ${u(8)} 0`, display: "flex", flexDirection: "column" }}>
                 {!hideTitle && (
                   <>
-                    <h2 className={rise} style={{ margin: 0, font: `500 ${u(34)}/1 var(--font-display), 'Funnel Display', sans-serif`, letterSpacing: "-0.045em" }}>{title}</h2>
+                    <h2 className={rise} style={{ margin: 0, font: `500 ${u(34)}/1.3 var(--font-display), 'Funnel Display', sans-serif`, letterSpacing: "-0.045em", paddingBottom: "0.2em" }}>{title}</h2>
                     <p className={rise} style={{ margin: `${u(8)} 0 0`, fontSize: u(tagSize), lineHeight: 1.38, color: dark ? "#C9C6D6" : "#55534D" }}>{tagline}</p>
                   </>
                 )}

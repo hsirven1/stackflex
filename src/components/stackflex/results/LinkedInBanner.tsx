@@ -105,16 +105,39 @@ export function bannerUnits(width: number | string): { u: UnitFn; rootStyle: CSS
   };
 }
 
-function densityTokens(density: Density, rows = 1) {
+function densityTokens(density: Density, rows = 1, hasModels = false) {
+  const modelExtra = hasModels ? (density === "compact" ? 10 : rows >= 3 ? 10 : 12) : 0;
+  const modelSize = density === "compact" ? 11 : rows >= 3 ? 11.5 : 12.5;
   if (density === "compact") {
-    return { gap: 4, fontSize: 14.5, chrome: 5 + 24 + 6 + 7, cellH: 42, minCell: 108 };
+    return {
+      gap: 4,
+      fontSize: 14.5,
+      chrome: 5 + 24 + 6 + 7,
+      cellH: 42 + modelExtra,
+      minCell: 108,
+      modelSize,
+    };
   }
   // Roomy with three rows (e.g. 5 long names in 2 columns) needs a slightly
   // tighter cell so the stack still fits the 1584×396 safe area.
   if (rows >= 3) {
-    return { gap: 6, fontSize: 16, chrome: 7 + 32 + 8 + 10, cellH: 46, minCell: 150 };
+    return {
+      gap: 6,
+      fontSize: 16,
+      chrome: 7 + 32 + 8 + 10,
+      cellH: 46 + modelExtra,
+      minCell: 150,
+      modelSize,
+    };
   }
-  return { gap: 7, fontSize: 18, chrome: 8 + 36 + 9 + 11, cellH: 56, minCell: 128 };
+  return {
+    gap: 7,
+    fontSize: 18,
+    chrome: 8 + 36 + 9 + 11,
+    cellH: 56 + modelExtra,
+    minCell: 128,
+    modelSize,
+  };
 }
 
 /** Approx Funnel Display semibold advance at the given size (authoring units). */
@@ -143,7 +166,8 @@ function scoreLayout(
 ): number {
   const count = tools.length;
   const rows = Math.ceil(count / cols);
-  const { gap, fontSize, chrome, minCell } = densityTokens(density, rows);
+  const hasModels = tools.some((t) => Boolean(t.model?.trim()));
+  const { gap, fontSize, chrome, minCell } = densityTokens(density, rows, hasModels);
   const cellW = (CONTENT_WIDTH - (cols - 1) * gap) / cols;
   const nameBudget = Math.max(0, cellW - chrome);
   const lastRow = count % cols || cols;
@@ -169,9 +193,10 @@ function scoreLayout(
   if (count >= 4 && count <= 6 && rows === 2 && cols <= 3) score += 35;
   if (count >= 7 && count <= 10 && rows === 2) score += 25;
   // Three rows are acceptable for 4–5 long names in 2 columns; otherwise prefer fewer rows.
+  // Model sublines make cells taller — penalize tall roomy 3-row stacks harder.
   if (rows >= 3) {
-    if (count <= 5 && cols === 2) score += density === "roomy" ? 10 : 0;
-    else score -= density === "roomy" ? 90 : 8;
+    if (count <= 5 && cols === 2) score += density === "roomy" ? (hasModels ? -15 : 10) : 0;
+    else score -= density === "roomy" ? (hasModels ? 120 : 90) : 8;
   }
   if (lastRow === 1 && rows > 1) score -= 10;
 
@@ -255,7 +280,8 @@ export function planBannerToolLayout(tools: CardTool[]): ToolLayoutPlan {
     // If full names already fit cleanly, do not consider compact labels.
     if (!preferCompactLabels) {
       const rows = Math.ceil(count / best.cols);
-      const { gap, fontSize, chrome } = densityTokens(best.density, rows);
+      const hasModels = tools.some((t) => Boolean(t.model?.trim()));
+      const { gap, fontSize, chrome } = densityTokens(best.density, rows, hasModels);
       const cellW = (CONTENT_WIDTH - (best.cols - 1) * gap) / best.cols;
       const budget = Math.max(0, cellW - chrome);
       const fits = tools.every((t) => estimateNameWidth(t.name, fontSize) <= budget + 0.5);
@@ -392,9 +418,10 @@ export const LinkedInBanner = forwardRef<HTMLDivElement, LinkedInBannerProps>(fu
                 className="sfr-title"
                 style={{
                   margin: 0,
-                  paddingBottom: u(1),
-                  font: `600 ${compact ? u(22) : u(26)}/1 var(--font-display), 'Funnel Display', sans-serif`,
+                  // Match card: cover Funnel Display fontBoundingBoxDescent under bg-clip text.
+                  font: `600 ${compact ? u(22) : u(26)}/1.3 var(--font-display), 'Funnel Display', sans-serif`,
                   letterSpacing: "-0.04em",
+                  paddingBottom: "0.2em",
                   backgroundImage: dark
                     ? "linear-gradient(180deg, #FFFFFF 30%, #CFC8FF 70%, #9FE3D0)"
                     : `linear-gradient(180deg, #0B0B0C 35%, ${tk.lightTitleEnd} 100%)`,
@@ -480,10 +507,12 @@ function ToolGrid({
 
   const rows = Math.ceil(count / cols);
   const compact = density === "compact";
-  const tokens = densityTokens(density, rows);
+  const hasModels = tools.some((t) => Boolean(t.model?.trim()));
+  const tokens = densityTokens(density, rows, hasModels);
   const cellH = u(tokens.cellH);
   const logo = compact ? u(24) : rows >= 3 ? u(32) : u(36);
   const nameSize = u(tokens.fontSize);
+  const modelSize = u(tokens.modelSize);
   const padX = compact ? u(7) : u(11);
   const gap = u(tokens.gap);
   const star = compact ? u(11) : u(13);
@@ -492,9 +521,11 @@ function ToolGrid({
   const maxCol =
     count === 1 ? u(360) : count === 2 ? u(300) : count === 3 && cols === 3 ? u(260) : undefined;
 
+  const padY = hasModels ? u(compact ? 4 : 5) : "0";
   const cell: CSSProperties = {
     minWidth: 0,
-    height: cellH,
+    minHeight: cellH,
+    height: hasModels ? "auto" : cellH,
     boxSizing: "border-box",
     borderRadius: compact ? u(10) : u(13),
     display: "flex",
@@ -516,12 +547,13 @@ function ToolGrid({
         const a = /^#[0-9a-f]{6}$/i.test(t.accent ?? "") ? t.accent! : "#A8A59C";
         const main = i === 0;
         const label = labels[i] ?? t.name;
+        const model = t.model?.trim() || undefined;
         return (
           <div
             key={t.id}
             style={{
               ...cell,
-              padding: `0 ${padX} 0 ${compact ? u(5) : u(8)}`,
+              padding: `${padY} ${padX} ${padY} ${compact ? u(5) : u(8)}`,
               gap: compact ? u(6) : u(9),
               background: dark
                 ? `linear-gradient(90deg, ${a}2E, rgba(255,255,255,.04) 60%)`
@@ -585,7 +617,7 @@ function ToolGrid({
                 </span>
               )}
             </span>
-            <span style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+            <span style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: model ? u(1) : 0 }}>
               <span
                 title={t.name !== label ? t.name : undefined}
                 style={{
@@ -600,6 +632,23 @@ function ToolGrid({
               >
                 {label}
               </span>
+              {model && (
+                <span
+                  title={model}
+                  style={{
+                    maxWidth: "100%",
+                    fontSize: modelSize,
+                    lineHeight: 1.15,
+                    fontWeight: 500,
+                    color: dark ? "#B8B3D4" : "#6F6D66",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {model}
+                </span>
+              )}
             </span>
           </div>
         );

@@ -68,6 +68,16 @@ describe("planBannerToolLayout", () => {
     expect(Math.ceil(10 / plan.cols)).toBeLessThanOrEqual(3);
     expect(plan.density).toBe("compact");
   });
+
+  it("still produces a valid grid when tools include selected models", () => {
+    const withModels = tools("Claude Code", "Cursor", "ChatGPT", "n8n", "Perplexity").map((t, i) =>
+      i < 3 ? { ...t, model: i === 0 ? "Opus 4.5" : i === 1 ? "Sonnet 4.5" : "GPT-4.1" } : t,
+    );
+    const plan = planBannerToolLayout(withModels);
+    expect(plan.cols).toBeGreaterThanOrEqual(2);
+    expect(Math.ceil(withModels.length / plan.cols)).toBeLessThanOrEqual(3);
+    expect(plan.labels).toHaveLength(5);
+  });
 });
 
 describe("bannerUnits", () => {
