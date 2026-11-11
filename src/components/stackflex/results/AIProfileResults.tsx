@@ -77,7 +77,7 @@ function useThemeState(
 export function AIProfileResults({
   profile,
   cardTheme: cardThemeProp,
-  defaultCardTheme = "dark",
+  defaultCardTheme = "light",
   onCardThemeChange,
   bannerTheme: bannerThemeProp,
   defaultBannerTheme = "dark",
@@ -156,7 +156,7 @@ export function AIProfileResults({
           header
         )}
 
-        <div className="mx-auto w-full max-w-[1280px] px-4 pb-7 pt-6 md:px-10 md:pb-8 md:pt-10 xl:px-0">
+        <div className="mx-auto w-full max-w-[1280px] px-4 pb-7 pt-4 md:px-10 md:pb-8 md:pt-7 xl:px-0">
           <section className="sfr-stage relative grid grid-cols-1 items-start gap-6 overflow-hidden rounded-3xl px-3 py-4 md:gap-10 md:rounded-[32px] md:p-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[380px_minmax(0,1fr)] xl:gap-14 xl:px-12 xl:py-9">
             <div aria-hidden className="sfr-stage-dots pointer-events-none absolute inset-0" />
             <div
@@ -173,7 +173,7 @@ export function AIProfileResults({
                 <ThemeToggle value={cardTheme} onChange={setCardTheme} labels ariaLabel="Card theme" />
               </div>
 
-              <CardReveal playing={pack.playing} run={pack.run} onSkip={pack.skip}>
+              <CardReveal playing={pack.playing} run={pack.run}>
                 <AIProfileCard
                   ref={cardRef}
                   profile={profile}
@@ -209,15 +209,6 @@ export function AIProfileResults({
                   </button>
                 )}
               </div>
-              {pack.motionOk && !pack.playing && (
-                <button
-                  type="button"
-                  onClick={pack.replay}
-                  className="self-start text-[12.5px] font-medium text-[#A8A59C] hover:text-[#6F6D66]"
-                >
-                  Replay reveal
-                </button>
-              )}
             </div>
 
             <div aria-hidden className="relative h-px bg-[#E6E3DC] md:hidden" />

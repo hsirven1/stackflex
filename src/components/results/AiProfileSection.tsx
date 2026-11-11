@@ -68,7 +68,7 @@ const BANNER_THEME_KEY = "stackflex:banner-theme";
 const cardThemeListeners = new Set<() => void>();
 const bannerThemeListeners = new Set<() => void>();
 
-function readStoredTheme(key: string, fallback: CardTheme = "dark"): CardTheme {
+function readStoredTheme(key: string, fallback: CardTheme): CardTheme {
   if (typeof window === "undefined") return fallback;
   try {
     const v = localStorage.getItem(key);
@@ -78,20 +78,14 @@ function readStoredTheme(key: string, fallback: CardTheme = "dark"): CardTheme {
   }
 }
 
+/** New profiles: Light card. Saved choices always win. */
 function readCardTheme(): CardTheme {
-  return readStoredTheme(CARD_THEME_KEY, "dark");
+  return readStoredTheme(CARD_THEME_KEY, "light");
 }
 
-/** Banner theme persists independently; first visit inherits the card theme. */
+/** New profiles: Dark banner. Independent of the card theme. */
 function readBannerTheme(): CardTheme {
-  if (typeof window === "undefined") return "dark";
-  try {
-    const v = localStorage.getItem(BANNER_THEME_KEY);
-    if (v === "light" || v === "dark") return v;
-    return readCardTheme();
-  } catch {
-    return readCardTheme();
-  }
+  return readStoredTheme(BANNER_THEME_KEY, "dark");
 }
 
 function subscribeCardTheme(onStoreChange: () => void) {
@@ -151,7 +145,7 @@ export function AiProfileSection({
   const exportCardRef = useRef<HTMLDivElement>(null);
   const exportBannerRef = useRef<HTMLDivElement>(null);
   const editBtnRef = useRef<HTMLButtonElement>(null);
-  const cardTheme = useSyncExternalStore(subscribeCardTheme, readCardTheme, () => "dark" as CardTheme);
+  const cardTheme = useSyncExternalStore(subscribeCardTheme, readCardTheme, () => "light" as CardTheme);
   const bannerTheme = useSyncExternalStore(subscribeBannerTheme, readBannerTheme, () => "dark" as CardTheme);
   const fileShare = useSyncExternalStore(subscribeNothing, browserCanShareCard, () => false);
   const publicUrl = useSyncExternalStore(

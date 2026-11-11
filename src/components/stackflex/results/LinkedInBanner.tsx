@@ -345,6 +345,22 @@ export const LinkedInBanner = forwardRef<HTMLDivElement, LinkedInBannerProps>(fu
         }}
       />
 
+      {/* ~36px inset at 1584×396 — closer to the top-right safe corner than the title row. */}
+      <MadeWithStackFlex
+        size={compact ? u(11.5) : u(12.5)}
+        fontSize={compact ? u(10) : u(11)}
+        outline={dark ? "#131219" : "#FFFFFF"}
+        color={dark ? "#E0DCEC" : "#5C5A54"}
+        style={{
+          position: "absolute",
+          // ~32–36px inset at 1584×396 (author units × 1.584).
+          top: compact ? u(18) : u(20),
+          right: compact ? u(20) : u(22),
+          zIndex: 2,
+          flex: "none",
+        }}
+      />
+
       <div
         style={{
           position: "absolute",
@@ -359,59 +375,50 @@ export const LinkedInBanner = forwardRef<HTMLDivElement, LinkedInBannerProps>(fu
           minHeight: 0,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: u(14), flex: "none" }}>
-          <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: u(10) }}>
-            <div
+        <div style={{ display: "flex", alignItems: "center", gap: u(10), flex: "none", paddingRight: u(150) }}>
+          <div
+            style={{
+              width: compact ? u(34) : u(42),
+              height: compact ? u(34) : u(42),
+              flex: "none",
+            }}
+          >
+            <StyleSymbol style={styleId} dark={dark} />
+          </div>
+          <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: compact ? u(2) : u(3) }}>
+            <h2
+              className="sfr-title"
               style={{
-                width: compact ? u(34) : u(42),
-                height: compact ? u(34) : u(42),
-                flex: "none",
+                margin: 0,
+                paddingBottom: u(1),
+                font: `600 ${compact ? u(22) : u(26)}/1 var(--font-display), 'Funnel Display', sans-serif`,
+                letterSpacing: "-0.04em",
+                backgroundImage: dark
+                  ? "linear-gradient(180deg, #FFFFFF 30%, #CFC8FF 70%, #9FE3D0)"
+                  : `linear-gradient(180deg, #0B0B0C 35%, ${tk.lightTitleEnd} 100%)`,
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                color: "transparent",
               }}
             >
-              <StyleSymbol style={styleId} dark={dark} />
-            </div>
-            <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: compact ? u(2) : u(3) }}>
-              <h2
-                className="sfr-title"
-                style={{
-                  margin: 0,
-                  paddingBottom: u(1),
-                  font: `600 ${compact ? u(22) : u(26)}/1 var(--font-display), 'Funnel Display', sans-serif`,
-                  letterSpacing: "-0.04em",
-                  backgroundImage: dark
-                    ? "linear-gradient(180deg, #FFFFFF 30%, #CFC8FF 70%, #9FE3D0)"
-                    : `linear-gradient(180deg, #0B0B0C 35%, ${tk.lightTitleEnd} 100%)`,
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  color: "transparent",
-                }}
-              >
-                {title}
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: compact ? u(12) : u(13.5),
-                  lineHeight: 1.25,
-                  fontWeight: 500,
-                  color: dark ? "#D4D1E0" : "#4A4842",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {tagline}
-              </p>
-            </div>
+              {title}
+            </h2>
+            <p
+              style={{
+                margin: 0,
+                fontSize: compact ? u(12) : u(13.5),
+                lineHeight: 1.25,
+                fontWeight: 500,
+                color: dark ? "#D4D1E0" : "#4A4842",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {tagline}
+            </p>
           </div>
-          <MadeWithStackFlex
-            size={compact ? u(11.5) : u(12.5)}
-            fontSize={compact ? u(10) : u(11)}
-            outline={dark ? "#131219" : "#FFFFFF"}
-            color={dark ? "#E0DCEC" : "#5C5A54"}
-            style={{ flex: "none" }}
-          />
         </div>
 
         <div

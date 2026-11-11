@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { Mark } from "@/components/stackflex/Brand";
-import { focusRing } from "@/components/stackflex/Controls";
 
 /** Keep in sync with `.sfr-pack-flip` in profile-results.css (~1.7s). */
 const FLIP_MS = 1700;
@@ -18,21 +17,20 @@ function reducedNow() {
 }
 
 /**
- * Plays once when `play` is true and motion is allowed. Replay is explicit.
- * Theme changes do not restart it.
+ * Plays once when `play` is true and motion is allowed.
+ * Theme changes do not restart it. No Skip / Replay UI — Escape still ends early.
  *
  * When `play` is true, the first paint uses the flip wrapper so the card back
  * shows first — the working-style title must not flash before the flip.
  */
 export function usePackReveal(play: boolean) {
   const reduce = useSyncExternalStore(subscribeReduced, reducedNow, () => true);
-  const [run, setRun] = useState(0);
-  /** Independent of `play` so Replay works on return visits. */
+  const [run] = useState(0);
   const [session, setSession] = useState<"idle" | "play" | "done">(() =>
     play ? "play" : "done",
   );
 
-  // Start the auto-reveal when requested; ignore once finished / idle after skip.
+  // Start the auto-reveal when requested; ignore once finished.
   if (play && !reduce && session === "idle") {
     setSession("play");
   }
@@ -59,12 +57,6 @@ export function usePackReveal(play: boolean) {
     playing,
     run,
     motionOk: !reduce,
-    skip: () => setSession("done"),
-    replay: () => {
-      if (reduce) return;
-      setRun((n) => n + 1);
-      setSession("play");
-    },
   };
 }
 
@@ -75,12 +67,10 @@ export function usePackReveal(play: boolean) {
 export function CardReveal({
   playing,
   run,
-  onSkip,
   children,
 }: {
   playing: boolean;
   run: number;
-  onSkip: () => void;
   children: ReactNode;
 }) {
   if (!playing) return children;
@@ -100,13 +90,6 @@ export function CardReveal({
           <span className="sfr-pack__brand">StackFlex</span>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onSkip}
-        className={`absolute right-3 top-3 z-20 inline-flex h-9 items-center rounded-full border border-white/35 bg-black/45 px-3.5 text-[13px] font-semibold text-white hover:bg-black/60 ${focusRing}`}
-      >
-        Skip
-      </button>
     </div>
   );
 }
