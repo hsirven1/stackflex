@@ -34,7 +34,8 @@ function selectionFromPreference(
 }
 
 /**
- * Horizontal, snap-scrolling archetype cards + No title.
+ * Horizontal, snap-scrolling archetype cards.
+ * Order: No title → Recommended → remaining styles (existing catalog order, no duplicate).
  * Recommended badge stays on the classifier suggestion; Selected is independent.
  */
 export function ArchetypePicker({ recommendedId, preference, onChange }: Props) {
@@ -43,6 +44,10 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
   const [canNext, setCanNext] = useState(false);
   const selected = selectionFromPreference(preference, recommendedId);
   const isManualOrHidden = preference?.mode === "manual" || preference?.mode === "hidden";
+  const styleOrder = [
+    recommendedId,
+    ...WORKING_STYLE_IDS.filter((id) => id !== recommendedId),
+  ];
 
   function updateArrows() {
     const el = listRef.current;
@@ -52,9 +57,11 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
   }
 
   useEffect(() => {
-    updateArrows();
     const el = listRef.current;
     if (!el) return;
+    // Always open at the start so No title + Recommended are visible.
+    el.scrollLeft = 0;
+    updateArrows();
     const onScroll = () => updateArrows();
     el.addEventListener("scroll", onScroll, { passive: true });
     const ro = new ResizeObserver(updateArrows);
@@ -63,7 +70,7 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
       el.removeEventListener("scroll", onScroll);
       ro.disconnect();
     };
-  }, []);
+  }, [recommendedId]);
 
   function scrollByDir(dir: -1 | 1) {
     const el = listRef.current;
@@ -85,8 +92,8 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
   function resetSuggested() {
     onChange({ mode: "auto" });
     const el = listRef.current;
-    const target = el?.querySelector<HTMLElement>(`[data-style-id="${recommendedId}"]`);
-    target?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    if (!el) return;
+    el.scrollTo({ left: 0, behavior: "smooth" });
   }
 
   return (
@@ -142,7 +149,32 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
           tabIndex={0}
           className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {WORKING_STYLE_IDS.map((id) => {
+          <button
+            type="button"
+            role="option"
+            data-archetype-card=""
+            aria-selected={selected.kind === "hidden"}
+            onClick={pickHidden}
+            className={`relative flex w-[min(220px,72vw)] shrink-0 snap-start flex-col gap-2.5 rounded-[18px] bg-[#FAF9F6] p-3.5 text-left transition-shadow sm:w-[210px] ${focusRing} ${
+              selected.kind === "hidden"
+                ? "shadow-[inset_0_0_0_2px_#3A2EFF]"
+                : "shadow-[inset_0_0_0_1px_#E6E3DC] hover:shadow-[inset_0_0_0_1px_#C9C6BE]"
+            }`}
+          >
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-sf-muted shadow-[0_0_0_1px_#E6E3DC]">
+              <EyeOff className="size-6" strokeWidth={1.8} aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-display text-[16px] font-semibold tracking-[-0.03em] text-sf-ink">
+                No title
+              </span>
+              <span className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-sf-muted">
+                Show my tools without an AI title.
+              </span>
+            </span>
+          </button>
+
+          {styleOrder.map((id) => {
             const meta = STYLE_META[id];
             const copy = PREVIEW_COPY[id];
             const isSelected = selected.kind === "style" && selected.id === id;
@@ -183,31 +215,6 @@ export function ArchetypePicker({ recommendedId, preference, onChange }: Props) 
               </button>
             );
           })}
-
-          <button
-            type="button"
-            role="option"
-            data-archetype-card=""
-            aria-selected={selected.kind === "hidden"}
-            onClick={pickHidden}
-            className={`relative flex w-[min(220px,72vw)] shrink-0 snap-start flex-col gap-2.5 rounded-[18px] bg-[#FAF9F6] p-3.5 text-left transition-shadow sm:w-[210px] ${focusRing} ${
-              selected.kind === "hidden"
-                ? "shadow-[inset_0_0_0_2px_#3A2EFF]"
-                : "shadow-[inset_0_0_0_1px_#E6E3DC] hover:shadow-[inset_0_0_0_1px_#C9C6BE]"
-            }`}
-          >
-            <span className="flex size-14 items-center justify-center rounded-2xl bg-white text-sf-muted shadow-[0_0_0_1px_#E6E3DC]">
-              <EyeOff className="size-6" strokeWidth={1.8} aria-hidden />
-            </span>
-            <span className="min-w-0">
-              <span className="block font-display text-[16px] font-semibold tracking-[-0.03em] text-sf-ink">
-                No title
-              </span>
-              <span className="mt-1 line-clamp-2 text-[12.5px] leading-snug text-sf-muted">
-                Show my tools without an AI title.
-              </span>
-            </span>
-          </button>
         </div>
       </div>
     </div>
