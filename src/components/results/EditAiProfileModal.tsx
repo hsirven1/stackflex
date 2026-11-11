@@ -25,6 +25,8 @@ import { ToolLogo } from "@/components/stackflex/ToolLogo";
 import { catalog } from "@/lib/catalog/adapter";
 import { PROFESSIONAL_ROLES, roleLabel, type ProfessionalRole } from "@/lib/profile/roles";
 import { getProfile, setProfile, useProfile } from "@/lib/profile/store";
+import { resolveWorkingStyle } from "@/lib/profile/resolveWorkingStyle";
+import type { WorkingStylePreference } from "@/lib/profile/types";
 import { classifyWorkingStyle } from "@/lib/profile/workingStyle";
 import { track } from "@/lib/integrations/analytics";
 import { itemModelLabels } from "@/lib/selection/derive";
@@ -39,14 +41,15 @@ import {
 } from "@/lib/selection/store";
 import type { SelectedItem, StackState } from "@/lib/selection/types";
 import { stackTools } from "@/lib/stackflex/tools";
+import { ArchetypePicker } from "./ArchetypePicker";
 import { GhostButton, UtilityButton } from "./ResultsUI";
 import { ToolAutocomplete } from "./ToolAutocomplete";
 
 const CARD_VISIBLE = 8;
 
 /**
- * Wider Edit profile sheet: draft stack editing (search, reorder, remove), role,
- * and a read-only working-style summary. Save commits draft + role together.
+ * Wider Edit profile sheet: archetype, draft stack, and role.
+ * Save commits draft + role + working-style preference together.
  */
 export function EditAiProfileModal({
   stack,
@@ -63,6 +66,9 @@ export function EditAiProfileModal({
   const rootRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const [role, setRole] = useState<ProfessionalRole | undefined>(saved.professionalRole);
+  const [stylePref, setStylePref] = useState<WorkingStylePreference | undefined>(
+    saved.workingStylePreference,
+  );
   const [baseline, setBaseline] = useState(() => snapshotStack(stack));
   const [modelTarget, setModelTarget] = useState<ModelPopoverTarget | null>(null);
   const modelAnchors = useRef(new Map<string, HTMLButtonElement>());
@@ -74,7 +80,7 @@ export function EditAiProfileModal({
   const itemById = useMemo(() => new Map(live.items.map((i) => [i.id, i])), [live.items]);
   const selectedIds = useMemo(() => new Set(live.items.map((i) => i.id)), [live.items]);
   const hasAssistant = stackHasAssistant(live.items);
-  const style = useMemo(
+  const classified = useMemo(
     () =>
       classifyWorkingStyle({
         toolIds: live.items.map((i) => i.id),
@@ -82,9 +88,15 @@ export function EditAiProfileModal({
       }),
     [live.items, role],
   );
+  const resolved = useMemo(
+    () => resolveWorkingStyle(classified, stylePref, role),
+    [classified, stylePref, role],
+  );
 
   const dirty =
-    role !== saved.professionalRole || (draft != null && !sameStackSnapshot(snapshotStack(live), baseline));
+    role !== saved.professionalRole ||
+    !sameStylePref(stylePref, saved.workingStylePreference) ||
+    (draft != null && !sameStackSnapshot(snapshotStack(live), baseline));
 
   const liveModelTarget = useMemo(() => {
     if (!modelTarget || modelTarget.mode !== "edit") return modelTarget;
@@ -133,6 +145,7 @@ export function EditAiProfileModal({
     setProfile({
       professionalRole: nextRole,
       professionalTitle: title,
+      workingStylePreference: stylePref ?? { mode: "auto" },
     });
     track({ name: "profile_edited", props: {} });
     onClose();
@@ -207,7 +220,7 @@ export function EditAiProfileModal({
               Edit profile
             </h2>
             <p className="mt-1 text-[13px] leading-snug text-sf-muted">
-              Manage your AI stack, role, and how your profile reads.
+              Choose your AI profile, stack, and professional role.
             </p>
           </div>
           <button
@@ -222,7 +235,16 @@ export function EditAiProfileModal({
 
         <form onSubmit={save} className="flex min-h-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 space-y-8 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
-            {/* 1. Your AI stack */}
+            {/* 1. Your AI profile (archetype) */}
+            <section aria-labelledby="edit-style-heading">
+              <ArchetypePicker
+                recommendedId={resolved.recommendedId}
+                preference={stylePref}
+                onChange={setStylePref}
+              />
+            </section>
+
+            {/* 2. Your AI stack */}
             <section aria-labelledby="edit-stack-heading">
               <div className="flex flex-wrap items-end justify-between gap-2">
                 <div className="min-w-0">
@@ -373,7 +395,7 @@ export function EditAiProfileModal({
               </p>
             </section>
 
-            {/* 2. Professional role */}
+            {/* 3. Professional role */}
             <section aria-labelledby="edit-role-heading">
               <h3 id="edit-role-heading" className="font-display text-[18px] font-semibold tracking-[-0.03em]">
                 Your professional role
@@ -400,20 +422,6 @@ export function EditAiProfileModal({
                     </button>
                   );
                 })}
-              </div>
-            </section>
-
-            {/* 3. Working style (read-only summary) */}
-            <section aria-labelledby="edit-style-heading">
-              <h3 id="edit-style-heading" className="font-display text-[18px] font-semibold tracking-[-0.03em]">
-                Your working style
-              </h3>
-              <div className="mt-3 rounded-[16px] bg-[#FAF9F6] px-4 py-3.5 shadow-[inset_0_0_0_1px_#E6E3DC]">
-                <p className="font-display text-[17px] font-semibold tracking-[-0.03em] text-sf-ink">{style.name}</p>
-                <p className="mt-1 text-[13.5px] leading-snug text-sf-muted">{style.tagline}</p>
-                <p className="mt-2 text-[12px] leading-snug text-sf-subtle">
-                  Calculated from your AI stack. Save to refresh your card and banner.
-                </p>
               </div>
             </section>
           </div>
@@ -463,4 +471,12 @@ function snapshotStack(stack: Pick<StackState, "items" | "primaryId">): StackSna
 
 function sameStackSnapshot(a: StackSnapshot, b: StackSnapshot) {
   return a.primaryId === b.primaryId && a.ids.join() === b.ids.join() && a.models === b.models;
+}
+
+function sameStylePref(a: WorkingStylePreference | undefined, b: WorkingStylePreference | undefined) {
+  const left = a ?? { mode: "auto" as const };
+  const right = b ?? { mode: "auto" as const };
+  if (left.mode !== right.mode) return false;
+  if (left.mode === "manual" || right.mode === "manual") return left.styleId === right.styleId;
+  return true;
 }

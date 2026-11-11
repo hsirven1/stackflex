@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { isProfessionalRole } from "./roles";
+import { isWorkingStyleId } from "./workingStyle";
 import {
   AVATAR_URL_MAX,
   EMPTY_PROFILE,
@@ -9,6 +10,7 @@ import {
   TITLE_MAX,
   type IdentitySource,
   type ProfileIdentity,
+  type WorkingStylePreference,
 } from "./types";
 
 const STORAGE_KEY = "stackflex:profile:v1";
@@ -47,15 +49,28 @@ export function sanitizeProfile(raw: unknown): ProfileIdentity {
   const identitySource: IdentitySource | undefined =
     r.identitySource === "linkedin" || r.identitySource === "manual" ? r.identitySource : undefined;
   const professionalRole = isProfessionalRole(r.professionalRole) ? r.professionalRole : undefined;
+  const workingStylePreference = sanitizeWorkingStylePreference(r.workingStylePreference);
 
   return {
     displayName,
     professionalTitle,
     professionalRole,
+    ...(workingStylePreference ? { workingStylePreference } : {}),
     avatarReference,
     avatarPreview,
     identitySource,
   };
+}
+
+function sanitizeWorkingStylePreference(raw: unknown): WorkingStylePreference | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Partial<WorkingStylePreference>;
+  if (r.mode === "auto") return { mode: "auto" };
+  if (r.mode === "hidden") return { mode: "hidden" };
+  if (r.mode === "manual" && isWorkingStyleId(r.styleId)) {
+    return { mode: "manual", styleId: r.styleId };
+  }
+  return undefined;
 }
 
 function load() {

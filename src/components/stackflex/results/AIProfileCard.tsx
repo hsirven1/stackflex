@@ -41,6 +41,7 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
   const styleId = toStyleId(profile.workingStyle.id);
   const tk = STYLE_TOKENS[styleId];
   const { title, tagline } = profile.workingStyle;
+  const hideTitle = Boolean(profile.hideTitle);
   const tagSize = tagline.length > 80 ? 13 : 15;
   const toolScale = hero ? 1.32 : 1;
 
@@ -85,31 +86,35 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
             <div style={{ ...layer, inset: "auto", left: "50%", top: u(hero ? 118 : 82), width: u(hero ? 280 : 220), height: u(hero ? 280 : 220), transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(closest-side, ${tk.c1}${dark ? "70" : "38"}, transparent)` }} />
             <div style={{ ...layer, background: streak(dark ? 0.2 : 0.7) }} />
             <div style={{ position: "relative", height: "100%", boxSizing: "border-box", padding: `${u(hero ? 34 : 20)} ${u(hero ? 28 : 26)} ${u(hero ? 30 : 26)}`, display: "flex", flexDirection: "column" }}>
-              <div style={{ alignSelf: "center", width: u(hero ? 112 : 118), height: u(hero ? 112 : 118), filter: `drop-shadow(0 ${u(12)} ${u(22)} ${dark ? "rgba(0,0,0,.45)" : "rgba(40,30,120,.22)"})` }}>
-                <StyleSymbol style={styleId} dark={dark} />
-              </div>
-              <h2
-                className={`${rise} sfr-title`.trim()}
-                style={{
-                  margin: `${u(hero ? 20 : 8)} 0 0`,
-                  textAlign: "center",
-                  font: `500 ${u(hero ? 42 : 36)}/1 var(--font-display), 'Funnel Display', sans-serif`,
-                  letterSpacing: "-0.045em",
-                  // Use backgroundImage (not the background shorthand): setting `background`
-                  // on theme change resets background-clip to border-box and paints a bar.
-                  backgroundImage: titleGradient,
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  color: "transparent",
-                }}
-              >
-                {title}
-              </h2>
-              <p className={rise} style={{ margin: `${u(hero ? 9 : 5)} auto 0`, maxWidth: u(340), textAlign: "center", fontSize: u(tagSize), lineHeight: 1.35, color: dark ? "#C9C6D6" : "#55534D", textWrap: "balance" as CSSProperties["textWrap"] }}>
-                {tagline}
-              </p>
-              {hero ? <div style={{ flex: 1, minHeight: u(12) }} /> : <div style={{ height: u(8) }} />}
+              {!hideTitle && (
+                <>
+                  <div style={{ alignSelf: "center", width: u(hero ? 112 : 118), height: u(hero ? 112 : 118), filter: `drop-shadow(0 ${u(12)} ${u(22)} ${dark ? "rgba(0,0,0,.45)" : "rgba(40,30,120,.22)"})` }}>
+                    <StyleSymbol style={styleId} dark={dark} />
+                  </div>
+                  <h2
+                    className={`${rise} sfr-title`.trim()}
+                    style={{
+                      margin: `${u(hero ? 20 : 8)} 0 0`,
+                      textAlign: "center",
+                      font: `500 ${u(hero ? 42 : 36)}/1 var(--font-display), 'Funnel Display', sans-serif`,
+                      letterSpacing: "-0.045em",
+                      // Use backgroundImage (not the background shorthand): setting `background`
+                      // on theme change resets background-clip to border-box and paints a bar.
+                      backgroundImage: titleGradient,
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      color: "transparent",
+                    }}
+                  >
+                    {title}
+                  </h2>
+                  <p className={rise} style={{ margin: `${u(hero ? 9 : 5)} auto 0`, maxWidth: u(340), textAlign: "center", fontSize: u(tagSize), lineHeight: 1.35, color: dark ? "#C9C6D6" : "#55534D", textWrap: "balance" as CSSProperties["textWrap"] }}>
+                    {tagline}
+                  </p>
+                </>
+              )}
+              {hero ? <div style={{ flex: 1, minHeight: u(12) }} /> : <div style={{ height: hideTitle ? u(4) : u(8) }} />}
               {tools}
               <div style={{ marginTop: hero ? u(12) : "auto", paddingTop: hero ? 0 : u(10) }}>{footer}</div>
             </div>
@@ -133,8 +138,12 @@ export const AIProfileCard = forwardRef<HTMLDivElement, AIProfileCardProps>(func
                 </div>
               </div>
               <div style={{ flex: 1, minHeight: 0, padding: `${u(18)} ${u(8)} 0`, display: "flex", flexDirection: "column" }}>
-                <h2 className={rise} style={{ margin: 0, font: `500 ${u(34)}/1 var(--font-display), 'Funnel Display', sans-serif`, letterSpacing: "-0.045em" }}>{title}</h2>
-                <p className={rise} style={{ margin: `${u(8)} 0 0`, fontSize: u(tagSize), lineHeight: 1.38, color: dark ? "#C9C6D6" : "#55534D" }}>{tagline}</p>
+                {!hideTitle && (
+                  <>
+                    <h2 className={rise} style={{ margin: 0, font: `500 ${u(34)}/1 var(--font-display), 'Funnel Display', sans-serif`, letterSpacing: "-0.045em" }}>{title}</h2>
+                    <p className={rise} style={{ margin: `${u(8)} 0 0`, fontSize: u(tagSize), lineHeight: 1.38, color: dark ? "#C9C6D6" : "#55534D" }}>{tagline}</p>
+                  </>
+                )}
                 <div style={{ flex: 1, minHeight: u(10) }} />
                 {tools}
                 <div style={{ marginTop: u(11), paddingBottom: u(8) }}>{footer}</div>

@@ -15,7 +15,7 @@ import { stackTools, toolFromItem } from "./tools";
 export function toAIProfile(
   stack: Pick<StackState, "items" | "primaryId">,
   style: WorkingStyleResult,
-  options?: { name?: string; role?: string },
+  options?: { name?: string; role?: string; hideTitle?: boolean },
 ): AIProfile {
   const ordered = stackTools(stack); // already Main-first
   const tools: CardTool[] = ordered.map((tool) => {
@@ -41,6 +41,7 @@ export function toAIProfile(
   return {
     ...(options?.name ? { name: options.name } : {}),
     ...(options?.role ? { role: options.role } : {}),
+    ...(options?.hideTitle ? { hideTitle: true } : {}),
     workingStyle: {
       id: style.id,
       title: style.name,

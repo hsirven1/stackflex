@@ -6,6 +6,7 @@ import type { AIProfile, CardLook, CardTheme } from "./lib/types";
 import { AIProfileCard } from "./AIProfileCard";
 import { BannerProfilePreview } from "./BannerProfilePreview";
 import { BannerViewer } from "./BannerViewer";
+import { AssetPreviewFrame } from "@/components/results/AssetPreviewFrame";
 import { CardReveal, usePackReveal } from "./CardReveal";
 import { BANNER_MAX_TOOLS, LinkedInBanner } from "./LinkedInBanner";
 import { StackFlexMark } from "./StackFlexMark";
@@ -173,16 +174,22 @@ export function AIProfileResults({
                 <ThemeToggle value={cardTheme} onChange={setCardTheme} labels ariaLabel="Card theme" />
               </div>
 
-              <CardReveal playing={pack.playing} run={pack.run}>
-                <AIProfileCard
-                  ref={cardRef}
-                  profile={profile}
-                  theme={cardTheme}
-                  look={look}
-                  animate={animateReveal && !playReveal}
-                  width="100%"
-                />
-              </CardReveal>
+              <AssetPreviewFrame
+                onEdit={onCustomize}
+                editLabel="Edit AI profile card"
+                maxTilt={pack.playing ? 0 : 3.2}
+              >
+                <CardReveal playing={pack.playing} run={pack.run}>
+                  <AIProfileCard
+                    ref={cardRef}
+                    profile={profile}
+                    theme={cardTheme}
+                    look={look}
+                    animate={animateReveal && !playReveal}
+                    width="100%"
+                  />
+                </CardReveal>
+              </AssetPreviewFrame>
               <div className={`flex items-center gap-2 md:gap-2.5 ${pack.playing ? "sfr-cta-in" : ""}`}>
                 <button
                   type="button"
@@ -220,7 +227,6 @@ export function AIProfileResults({
                   <h2 className="font-display text-xl font-medium leading-none tracking-[-0.035em] md:text-[22px]">
                     LinkedIn banner
                   </h2>
-                  <span className="text-xs text-[#8C897F] md:text-[13px]">3168 × 792 · 2×</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -235,13 +241,19 @@ export function AIProfileResults({
               </div>
 
               <div className={`relative flex flex-col gap-6 ${bannerEnter ? "sfr-banner-in" : ""}`}>
-                <BannerProfilePreview
-                  profile={profile}
-                  theme={bannerTheme}
-                  avatarUrl={avatarUrl}
-                  displayName={displayName}
-                  headline={headline}
-                />
+                <AssetPreviewFrame
+                  onEdit={onCustomize}
+                  editLabel="Edit LinkedIn banner"
+                  maxTilt={1.6}
+                >
+                  <BannerProfilePreview
+                    profile={profile}
+                    theme={bannerTheme}
+                    avatarUrl={avatarUrl}
+                    displayName={displayName}
+                    headline={headline}
+                  />
+                </AssetPreviewFrame>
                 {/* Live banner node for the download API; twins still do the PNG. Never shown. */}
                 <div className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0" aria-hidden>
                   <LinkedInBanner ref={bannerRef} profile={profile} theme={bannerTheme} animate={false} />

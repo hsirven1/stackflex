@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { focusRing } from "@/components/stackflex/Controls";
 import { ToolLogo } from "@/components/stackflex/ToolLogo";
@@ -122,32 +123,63 @@ export function ToolAutocomplete({
   }
 
   const showList = open && query.trim().length > 0 && suggestions.length > 0;
+  const activeSuggestion = suggestions[active];
+  const canAddActive = Boolean(activeSuggestion) && !(
+    activeSuggestion?.kind === "catalog" && selectedIds.has(activeSuggestion.tool.id)
+  );
+
+  function addActive() {
+    if (!activeSuggestion || !canAddActive) {
+      inputRef.current?.focus();
+      setOpen(true);
+      return;
+    }
+    pick(activeSuggestion);
+  }
 
   return (
     <div className="relative">
-      <input
-        ref={inputRef}
-        type="search"
-        role="combobox"
-        aria-expanded={showList}
-        aria-controls={listId}
-        aria-autocomplete="list"
-        aria-activedescendant={showList ? `${listId}-${active}` : undefined}
-        value={query}
-        placeholder="Search or add an AI tool..."
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setActive(0);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => {
-          // Allow mousedown on options to fire before closing.
-          window.setTimeout(() => setOpen(false), 120);
-        }}
-        onKeyDown={onKeyDown}
-        className={`h-12 w-full rounded-full border border-[#DAD7CF] bg-white px-4 text-[15px] text-sf-ink placeholder:text-sf-faint ${focusRing}`}
-      />
+      <div className="relative flex items-center">
+        <input
+          ref={inputRef}
+          type="search"
+          role="combobox"
+          aria-expanded={showList}
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={showList ? `${listId}-${active}` : undefined}
+          value={query}
+          placeholder="Search or add an AI tool..."
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setActive(0);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => {
+            // Allow mousedown on options to fire before closing.
+            window.setTimeout(() => setOpen(false), 120);
+          }}
+          onKeyDown={onKeyDown}
+          className={`h-12 w-full rounded-full border border-[#DAD7CF] bg-white py-0 pl-4 pr-12 text-[15px] text-sf-ink placeholder:text-sf-faint ${focusRing}`}
+        />
+        <button
+          type="button"
+          aria-label={
+            canAddActive
+              ? activeSuggestion?.kind === "custom"
+                ? `Add “${activeSuggestion.name}” as a custom tool`
+                : `Add ${activeSuggestion?.kind === "catalog" ? activeSuggestion.tool.name : "tool"}`
+              : "Search or add an AI tool"
+          }
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={addActive}
+          disabled={query.trim().length > 0 && showList && !canAddActive}
+          className={`absolute right-1.5 flex size-9 items-center justify-center rounded-full bg-[#0B0B0C] text-white hover:bg-[#24232A] disabled:opacity-35 ${focusRing}`}
+        >
+          <Plus className="size-4" strokeWidth={2.4} aria-hidden />
+        </button>
+      </div>
       {showList && (
         <ul
           id={listId}

@@ -14,6 +14,8 @@ export type AIProfile = {
   name?: string;     // not displayed on the approved card (kept for future use)
   role?: string;     // not displayed on the approved card (kept for future use)
   workingStyle: { id: string; title: string; tagline: string };
+  /** When true, card/banner use the tools-only layout (no archetype title). */
+  hideTitle?: boolean;
   tools: CardTool[]; // ordered; tools[0] is Main (✦)
   toolCount?: number;      // defaults to tools.length (toolkit header only)
   categoryCount?: number;  // defaults to distinct categories (toolkit header only)

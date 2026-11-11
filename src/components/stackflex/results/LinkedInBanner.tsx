@@ -283,6 +283,7 @@ export const LinkedInBanner = forwardRef<HTMLDivElement, LinkedInBannerProps>(fu
   const styleId = toStyleId(profile.workingStyle.id);
   const tk = STYLE_TOKENS[styleId];
   const { title, tagline } = profile.workingStyle;
+  const hideTitle = Boolean(profile.hideTitle);
   const visibleTools = profile.tools.slice(0, BANNER_MAX_TOOLS);
   const layout = planBannerToolLayout(visibleTools);
   const compact = layout.density === "compact";
@@ -375,51 +376,53 @@ export const LinkedInBanner = forwardRef<HTMLDivElement, LinkedInBannerProps>(fu
           minHeight: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: u(10), flex: "none", paddingRight: u(150) }}>
-          <div
-            style={{
-              width: compact ? u(34) : u(42),
-              height: compact ? u(34) : u(42),
-              flex: "none",
-            }}
-          >
-            <StyleSymbol style={styleId} dark={dark} />
-          </div>
-          <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: compact ? u(2) : u(3) }}>
-            <h2
-              className="sfr-title"
+        {!hideTitle && (
+          <div style={{ display: "flex", alignItems: "center", gap: u(10), flex: "none", paddingRight: u(150) }}>
+            <div
               style={{
-                margin: 0,
-                paddingBottom: u(1),
-                font: `600 ${compact ? u(22) : u(26)}/1 var(--font-display), 'Funnel Display', sans-serif`,
-                letterSpacing: "-0.04em",
-                backgroundImage: dark
-                  ? "linear-gradient(180deg, #FFFFFF 30%, #CFC8FF 70%, #9FE3D0)"
-                  : `linear-gradient(180deg, #0B0B0C 35%, ${tk.lightTitleEnd} 100%)`,
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                color: "transparent",
+                width: compact ? u(34) : u(42),
+                height: compact ? u(34) : u(42),
+                flex: "none",
               }}
             >
-              {title}
-            </h2>
-            <p
-              style={{
-                margin: 0,
-                fontSize: compact ? u(12) : u(13.5),
-                lineHeight: 1.25,
-                fontWeight: 500,
-                color: dark ? "#D4D1E0" : "#4A4842",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {tagline}
-            </p>
+              <StyleSymbol style={styleId} dark={dark} />
+            </div>
+            <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: compact ? u(2) : u(3) }}>
+              <h2
+                className="sfr-title"
+                style={{
+                  margin: 0,
+                  paddingBottom: u(1),
+                  font: `600 ${compact ? u(22) : u(26)}/1 var(--font-display), 'Funnel Display', sans-serif`,
+                  letterSpacing: "-0.04em",
+                  backgroundImage: dark
+                    ? "linear-gradient(180deg, #FFFFFF 30%, #CFC8FF 70%, #9FE3D0)"
+                    : `linear-gradient(180deg, #0B0B0C 35%, ${tk.lightTitleEnd} 100%)`,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  color: "transparent",
+                }}
+              >
+                {title}
+              </h2>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: compact ? u(12) : u(13.5),
+                  lineHeight: 1.25,
+                  fontWeight: 500,
+                  color: dark ? "#D4D1E0" : "#4A4842",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {tagline}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           style={{

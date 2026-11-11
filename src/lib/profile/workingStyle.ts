@@ -39,7 +39,17 @@ export type WorkingStyleResult = {
   scoringToolCount: number;
 };
 
-const STYLE_META: Record<
+export const WORKING_STYLE_IDS: WorkingStyleId[] = [
+  "builder",
+  "operator",
+  "researcher",
+  "creative",
+  "strategist",
+  "generalist",
+  "specialist",
+];
+
+export const STYLE_META: Record<
   WorkingStyleId,
   { name: string; defaultTagline: string }
 > = {
@@ -72,6 +82,19 @@ const STYLE_META: Record<
     defaultTagline: "Uses a focused set of AI tools.",
   },
 };
+
+export function isWorkingStyleId(value: unknown): value is WorkingStyleId {
+  return typeof value === "string" && value in STYLE_META;
+}
+
+/** Build a WorkingStyleResult for a chosen id, keeping stack stats from classification. */
+export function workingStyleForId(
+  id: WorkingStyleId,
+  base: Pick<WorkingStyleResult, "categoryCounts" | "toolCount" | "scoringToolCount">,
+  role?: ProfessionalRole | null,
+): WorkingStyleResult {
+  return result(id, base.categoryCounts, base.toolCount, base.scoringToolCount, role);
+}
 
 /** Map working-style catalog buckets → style ids (build+local → builder, etc.). */
 const CATEGORY_TO_STYLE: Record<WorkingStyleCategoryId, WorkingStyleId> = {

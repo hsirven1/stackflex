@@ -15,6 +15,7 @@ import { renderPng, saveDataUrl } from "@/lib/export/download";
 import { track } from "@/lib/integrations/analytics";
 import { roleLabel, type ProfessionalRole } from "@/lib/profile/roles";
 import { profileDisplayAvatar, setProfile, useProfile } from "@/lib/profile/store";
+import { resolveWorkingStyle } from "@/lib/profile/resolveWorkingStyle";
 import { classifyWorkingStyle } from "@/lib/profile/workingStyle";
 import type { StackState } from "@/lib/selection/types";
 import { createStackShareUrl, resolveShareOrigin } from "@/lib/stack-sharing";
@@ -128,9 +129,13 @@ export function AiProfileSection({
 }) {
   const profile = useProfile();
   const toolIds = useMemo(() => stack.items.map((i) => i.id), [stack.items]);
-  const style = useMemo(
+  const classified = useMemo(
     () => classifyWorkingStyle({ toolIds, role: profile.professionalRole }),
     [toolIds, profile.professionalRole],
+  );
+  const { style, hideTitle } = useMemo(
+    () => resolveWorkingStyle(classified, profile.workingStylePreference, profile.professionalRole),
+    [classified, profile.workingStylePreference, profile.professionalRole],
   );
   const roleLabelText = roleLabel(profile.professionalRole) || profile.professionalTitle;
   const aiProfile = useMemo(
@@ -138,8 +143,9 @@ export function AiProfileSection({
       toAIProfile(stack, style, {
         name: profile.displayName || undefined,
         role: roleLabelText || undefined,
+        hideTitle,
       }),
-    [stack, style, profile.displayName, roleLabelText],
+    [stack, style, hideTitle, profile.displayName, roleLabelText],
   );
 
   const exportCardRef = useRef<HTMLDivElement>(null);
