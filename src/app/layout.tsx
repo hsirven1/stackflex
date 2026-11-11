@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Archivo, JetBrains_Mono } from "next/font/google";
-import { PlausibleAnalytics } from "@/components/app/PlausibleAnalytics";
 import { funnelDisplay, funnelSans } from "@/lib/stackflex/fonts";
 import "./globals.css";
 
@@ -53,7 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         {children}
-        <PlausibleAnalytics />
+        <Analytics />
       </body>
     </html>
   );

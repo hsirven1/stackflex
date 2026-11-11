@@ -7,8 +7,7 @@ Lean public beta. Do not enable experimental portfolio routes in production.
 | Variable | Required | Value |
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | **Yes** | `https://stackflex.app` |
-| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Recommended | `stackflex.app` |
-| `NEXT_PUBLIC_PLAUSIBLE_SCRIPT_SRC` | No | Only if self-hosting / proxying Plausible |
+| `NEXT_PUBLIC_VERCEL_ANALYTICS_EVENTS` | No | Set to `1` only on Pro+ to send custom funnel events |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | No | Defaults to `hello@stackflex.app` |
 | `LINKEDIN_CLIENT_ID` | No | Leave empty to **disable** LinkedIn import |
 | `LINKEDIN_CLIENT_SECRET` | With LinkedIn | From LinkedIn developer app |
@@ -31,16 +30,13 @@ LinkedIn import stays disabled when `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECR
 2. Product: Sign In with LinkedIn using OpenID Connect
 3. Set env vars above and redeploy
 
-### Plausible
+### Vercel Web Analytics
 
-1. Add site `stackflex.app` in Plausible (or self-host).
-2. Set `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=stackflex.app`.
-3. Confirm hash pageviews (`#guide`, `#results`) and custom events in the dashboard:
-   - `start_clicked`
-   - `onboarding_completed`
-   - `card_downloaded`
-   - `banner_downloaded`
-   - `profile_edited`
+1. Enable **Web Analytics** for the StackFlex project in the Vercel dashboard (no env var required for page views).
+2. Confirm page views and referrers appear under **Analytics** after deploy (Reddit traffic shows as a referring site when visitors arrive from there).
+3. Custom funnel events (`start_clicked`, `onboarding_completed`, `card_downloaded`, `banner_downloaded`, `profile_edited`, …) require a **Pro** (or Enterprise) plan. On Hobby they stay abstracted and are not sent.
+4. After upgrading to Pro, set `NEXT_PUBLIC_VERCEL_ANALYTICS_EVENTS=1` and redeploy to activate `track()` → Vercel custom events.
+5. UTM campaign breakdown in the Vercel UI needs the **Web Analytics Plus** add-on; referrers work without it.
 
 ## 3. Routes that must stay closed in production
 
@@ -74,7 +70,7 @@ Smoke:
 
 - Set a **monthly spend alert** in the Vercel (or host) billing dashboard.
 - Cap preview deployments if using them heavily.
-- Plausible: use the plan that matches expected traffic; traffic spikes show in Plausible, not as per-event cloud function cost (client-side beacon).
+- Web Analytics: Hobby includes a monthly event allowance for page views; upgrade to Pro before enabling custom funnel events (`NEXT_PUBLIC_VERCEL_ANALYTICS_EVENTS=1`).
 - Keep LinkedIn import off unless needed (avoids OAuth abuse surface).
 
 ## 6. Rollback
@@ -87,6 +83,6 @@ Smoke:
 
 - [ ] Canonical domain loads over HTTPS
 - [ ] OG preview looks correct in LinkedIn/Slack debugger
-- [ ] Plausible receiving pageviews + a test `start_clicked`
+- [ ] Vercel Analytics receiving pageviews (and custom events only if Pro + `NEXT_PUBLIC_VERCEL_ANALYTICS_EVENTS=1`)
 - [ ] LinkedIn import intentionally off **or** end-to-end OAuth works
 - [ ] Spend alert enabled

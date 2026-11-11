@@ -33,7 +33,7 @@ src/
     export/
       presets.ts           export formats, pixel sizes, badge areas clear of profile photos
       download.ts          html-to-image PNG export at exact pixel dimensions
-    integrations/          disabled hooks for opt-in analytics and email capture
+    integrations/          Vercel Web Analytics product-event helpers (page views via root layout)
     themes.ts              Light / Dark / Monochrome render tokens + icon contrast logic
   components/
     badges/                Badge (the single badge component), metrics, FitText, BrandGlyph

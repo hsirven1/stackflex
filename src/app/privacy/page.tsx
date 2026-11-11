@@ -41,10 +41,10 @@ export default function PrivacyPage() {
               preview. Access tokens are not stored after the import handshake.
             </li>
             <li>
-              Anonymous product analytics via Plausible (page views, referrers/UTM campaign
-              parameters, and funnel events such as Start clicked, onboarding completed, or asset
-              downloaded). Events do not include your full tool stack, custom tool names, or personal
-              identifiers. Plausible is designed to operate without cookies for analytics.
+              Anonymous product analytics via Vercel Web Analytics (page views and referring
+              websites). Optional funnel events (for example Start clicked, onboarding completed, or
+              asset downloaded) may be collected when that feature is enabled on our hosting plan.
+              Events do not include your full tool stack, custom tool names, or personal identifiers.
             </li>
             <li>Standard hosting logs (IP address, user agent, timestamps) from our infrastructure.</li>
           </ul>
