@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           "/portfolio/",
           "/portfolio/build",
           "/portfolio/preview",
+          "/portfolio/review/",
           "/experiments/",
         ],
       },

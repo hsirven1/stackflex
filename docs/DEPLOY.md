@@ -6,9 +6,11 @@ Lean public beta. Do not enable experimental portfolio routes in production.
 
 | Variable | Required | Value |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | **Yes** | `https://stackflex.app` |
+| `NEXT_PUBLIC_SITE_URL` | **Yes** | Canonical host Claude/users hit with **no redirect**. Today: `https://www.stackflex.app` (apex 308s → www; Claude drops `Authorization` across hosts) |
 | `NEXT_PUBLIC_VERCEL_ANALYTICS_EVENTS` | No | Set to `1` only on Pro+ to send custom funnel events |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | No | Defaults to `hello@stackflex.app` |
+| `MCP_PORTFOLIO_TOKEN` | For MCP | Server-only bearer for `/api/mcp` (Encrypted; never `NEXT_PUBLIC_`). See `docs/MCP.md` |
+| `MCP_DRAFT_SECRET` | For MCP in prod | Server-only HMAC for review URLs (Encrypted; never `NEXT_PUBLIC_`) |
 | `LINKEDIN_CLIENT_ID` | No | Leave empty to **disable** LinkedIn import |
 | `LINKEDIN_CLIENT_SECRET` | With LinkedIn | From LinkedIn developer app |
 | `LINKEDIN_REDIRECT_URI` | No | Defaults to `{NEXT_PUBLIC_SITE_URL}/api/auth/linkedin/callback` |
@@ -22,7 +24,7 @@ LinkedIn import stays disabled when `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECR
 - **Build:** `npm run build`
 - **Start:** `npm run start` (Vercel uses the build output automatically).
 - **Node:** matches Next.js 16 requirements.
-- **Domains:** apex + `www` → HTTPS; set `NEXT_PUBLIC_SITE_URL` to the canonical host you want in OG/sitemap (prefer `https://stackflex.app`).
+- **Domains:** Production URL is `https://www.stackflex.app` (apex redirects to www). Set `NEXT_PUBLIC_SITE_URL=https://www.stackflex.app` so MCP review URLs and Claude’s connector host match.
 
 ### LinkedIn app (only if enabling import)
 
@@ -45,6 +47,8 @@ LinkedIn import stays disabled when `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECR
 | `/dev/*` | 404 |
 | `/portfolio`, `/portfolio/build`, `/portfolio/preview` | 404 |
 | `/api/auth/linkedin` | 503 unless LinkedIn env is configured |
+
+**Exception:** `/portfolio/review/[token]` stays available in production — it is the private MCP draft review surface (signed URL token). `/api/mcp` returns 503 until `MCP_PORTFOLIO_TOKEN` is set. See `docs/MCP.md`.
 
 Local `next dev` still serves portfolio + `/dev` galleries for testing.
 
